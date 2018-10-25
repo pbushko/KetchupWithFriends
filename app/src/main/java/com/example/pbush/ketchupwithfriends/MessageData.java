@@ -1,5 +1,6 @@
 package com.example.pbush.ketchupwithfriends;
 
+import android.util.Log;
 /**
  * Created by pbush on 10/24/2018.
  */
@@ -12,6 +13,7 @@ public class MessageData implements Comparable<MessageData> {
     //nothing in the constructor; we will assign the items separately
     public MessageData()
     {
+        Log.d("kasarn's", "Help");
     }
 
     //compares the phone numbers
