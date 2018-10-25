@@ -14,6 +14,7 @@ public class MessageData implements Comparable<MessageData> {
     public MessageData()
     {
         Log.d("kasarn's", "Help");
+        Log.d("kasarn's", "Trying this again");
     }
 
     //compares the phone numbers
