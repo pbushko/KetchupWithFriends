@@ -112,6 +112,7 @@ public class MainScreen extends AppCompatActivity {
         }
     }
 
+    //github try1
     public List<MessageData> getSentMessages()
     {
         Uri uriSms = Uri.parse("content://sms/sent");

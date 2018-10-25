@@ -31,7 +31,7 @@ public class ContactData {
         messages.add(m);
         relationshipPoints = 0;
     }
-
+/* meow */
     public String toString()
     {
         return "\nName: " + name +
