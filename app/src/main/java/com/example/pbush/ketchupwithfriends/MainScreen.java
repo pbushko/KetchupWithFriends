@@ -115,12 +115,12 @@ public class MainScreen extends AppCompatActivity {
     //github try1
     public List<MessageData> getSentMessages()
     {
-        Uri uriSms = Uri.parse("content://sms/sent");
-        Cursor cursor = this.getContentResolver().query(uriSms, null,null,null,null);
-        List<MessageData> outboxSms = parseCursorArray(cursor);
-        if(!cursor.isClosed())
-        {
-            cursor.close();
+            Uri uriSms = Uri.parse("content://sms/sent");
+            Cursor cursor = this.getContentResolver().query(uriSms, null,null,null,null);
+            List<MessageData> outboxSms = parseCursorArray(cursor);
+            if(!cursor.isClosed())
+            {
+                cursor.close();
         }
         return outboxSms;
     }
