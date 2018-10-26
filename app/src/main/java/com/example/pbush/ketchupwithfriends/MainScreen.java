@@ -13,6 +13,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -46,6 +48,15 @@ public class MainScreen extends AppCompatActivity {
                     new String[]{Manifest.permission.READ_SMS},
                     2);
         }
+
+        //setting a button
+        Button button = (Button) findViewById(R.id.Settings);
+        button.setOnClickListener( new View.OnClickListener(){
+            public void onClick (View v){
+                // Code here executes on main thread after user presses button
+                setContentView(R.layout.settings_screen);
+            }
+        });
 
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.READ_SMS)
@@ -198,5 +209,4 @@ public class MainScreen extends AppCompatActivity {
             .replace(" ", "").replace(")", "")
                 .replace("(", "");
     }
-
 }
