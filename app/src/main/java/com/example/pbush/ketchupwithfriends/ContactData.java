@@ -8,34 +8,58 @@ import java.util.List;
  */
 
 public class ContactData {
-    public String id;
-    public String name;
-    public String phoneNum;
-    public List<MessageData> messages;
-    public int relationshipPoints;
+    public String id; //id number of the contact
+    public String name; //name of the contact
+    public List<String> phoneNum; //phone number(s) of the contact
+    public List<MessageData> messages; //messages sent to the contact
+    public long lastMessaged; //last day/time this contact was messaged
+    public long nextMessageDeadline; //the next time this contact will need to be messaged to keep the streak
+    public int daysPerDeadline; //the amount of days that can pass between messages before breaking the streak
+    public int relationshipPoints; //the "points" assigned to this contact
+    public int streak; //the streak of consecutive times the contact has been messaged daily
 
     public ContactData()
     {
+        phoneNum = new ArrayList<String>();
         id = "";
         name = "";
-        phoneNum = "";
+        phoneNum.add("");
         messages = new ArrayList<MessageData>();
+        lastMessaged = 0;
+        daysPerDeadline = 0;
+        nextMessageDeadline = 0;
         relationshipPoints = 0;
+        streak = 0;
     }
 
     public ContactData(String num, MessageData m)
     {
+        phoneNum = new ArrayList<String>();
         id = "";
-        phoneNum = num;
+        phoneNum.add(num);
         messages = new ArrayList<MessageData>();
         messages.add(m);
+        lastMessaged = m.timestamp;
+        daysPerDeadline = 0;
+        nextMessageDeadline = 0;
         relationshipPoints = 0;
+        streak = 0;
     }
-/* meow */
+
+    public void addMessage(MessageData m)
+    {
+        messages.add(m);
+        //checking if the last messaged time needs updated
+        //need to expand this to also update the next message deadline too
+        if (lastMessaged < m.timestamp)
+            lastMessaged = m.timestamp;
+        return;
+    }
+
     public String toString()
     {
         return "\nName: " + name +
-                "\nPhone number: " + phoneNum +
+                "\nPhone number: " + phoneNum.get(0) +
                 "\nNum Messages: " + messages.size() +
                 "\nRelationship Points: " + relationshipPoints + "\n";
     }

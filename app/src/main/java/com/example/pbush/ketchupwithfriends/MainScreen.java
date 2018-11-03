@@ -11,11 +11,13 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.TabHost;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -24,7 +26,6 @@ import java.util.Date;
 import java.util.Calendar;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import android.provider.ContactsContract.CommonDataKinds.Phone;
 
 public class MainScreen extends AppCompatActivity {
 
@@ -32,6 +33,26 @@ public class MainScreen extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_screen);
+
+        TabHost host = (TabHost)findViewById(R.id.tabHost);
+        host.setup();
+        //Tab 1
+        TabHost.TabSpec spec = host.newTabSpec("Contacts");
+        spec.setContent(R.id.tab1);
+        spec.setIndicator("Contacts");
+        host.addTab(spec);
+        //Tab 2
+        spec = host.newTabSpec("Achievements");
+        spec.setContent(R.id.tab2);
+        spec.setIndicator("Achievements");
+        host.addTab(spec);
+        //Tab 3
+        //idk if we want a tab for this
+        spec = host.newTabSpec("Settings?");
+        spec.setContent(R.id.tab3);
+        spec.setIndicator("Settings");
+        host.addTab(spec);
+
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.READ_CONTACTS)
                 != PackageManager.PERMISSION_GRANTED)
@@ -49,15 +70,6 @@ public class MainScreen extends AppCompatActivity {
                     2);
         }
 
-        //setting a button
-        Button button = (Button) findViewById(R.id.Settings);
-        button.setOnClickListener( new View.OnClickListener(){
-            public void onClick (View v){
-                // Code here executes on main thread after user presses button
-                setContentView(R.layout.settings_screen);
-            }
-        });
-
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.READ_SMS)
                 == PackageManager.PERMISSION_GRANTED)
@@ -65,22 +77,14 @@ public class MainScreen extends AppCompatActivity {
             DateFormat formatter = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss");
             Calendar calendar = Calendar.getInstance();
             List<MessageData> messages = getSentMessages();
-            //for (MessageData message : messages)
-            //{
-                //Date d = new Date(message.timestamp);
-                //Log.d("message dates", d.toString());
-            //    Log.d("message dates", formatter.format(message.timestamp));
-            //}
+
             String myText = "";
 
             //printing some of the messages
             for (int i = 0; i < 50; i++)
             {
                 calendar.setTimeInMillis(messages.get(i).timestamp);
-                /*Log.d("message dates",
-                        formatter.format(calendar.getTime()) + " " +
-                                messages.get(i).address);
-                                */
+
                 myText += "time: " + formatter.format(calendar.getTime()) + " number: " +
                         messages.get(i).phoneNum + "\n";
             }
@@ -94,21 +98,17 @@ public class MainScreen extends AppCompatActivity {
                 boolean newNum = true;
                 for (ContactData contact : contacts)
                 {
-                    if(contact.phoneNum.compareTo(message.phoneNum) == 0) {
+                    if(contact.phoneNum.get(0).compareTo(message.phoneNum) == 0) {
                         newNum = false;
-                        contact.messages.add(message);
+                        contact.addMessage(message);
                     }
                 }
                 if (newNum) {
                     contacts.add(new ContactData(message.phoneNum, message));
                 }
                 count++;
-                if (count % 500 == 0)
-                {
-                    Log.d("tag", "" + count);
-                }
             }
-            Log.d("meow", "" + contacts.size());
+
             //showing the contact data
             for (ContactData contact : contacts)
             {
@@ -194,7 +194,7 @@ public class MainScreen extends AppCompatActivity {
             ContactData c = new ContactData();
             c.id = id;
             c.name = name;
-            c.phoneNum = number;
+            c.phoneNum.add(number);
             contacts.add(c);
         }
 
@@ -208,5 +208,12 @@ public class MainScreen extends AppCompatActivity {
         return number.replace("-", "").replace("+", "")
             .replace(" ", "").replace(")", "")
                 .replace("(", "");
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.activity_main_actions, menu);
+        return true;
     }
 }
