@@ -21,6 +21,8 @@ import android.widget.TabHost;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Date;
 import java.util.Calendar;
@@ -46,13 +48,8 @@ public class MainScreen extends AppCompatActivity {
         spec.setContent(R.id.tab2);
         spec.setIndicator("Achievements");
         host.addTab(spec);
-        //Tab 3
-        //idk if we want a tab for this
-        spec = host.newTabSpec("Settings?");
-        spec.setContent(R.id.tab3);
-        spec.setIndicator("Settings");
-        host.addTab(spec);
 
+        //getting permission from the user to access message and contact data
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.READ_CONTACTS)
                 != PackageManager.PERMISSION_GRANTED)
@@ -69,18 +66,20 @@ public class MainScreen extends AppCompatActivity {
                     new String[]{Manifest.permission.READ_SMS},
                     2);
         }
-
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.READ_SMS)
-                == PackageManager.PERMISSION_GRANTED)
+        //read in messages if we have access to it
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS)
+                == PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)
+                        == PackageManager.PERMISSION_GRANTED)
         {
             DateFormat formatter = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss");
             Calendar calendar = Calendar.getInstance();
             List<MessageData> messages = getSentMessages();
-
+            List<ContactData> contacts = getContacts();
             String myText = "";
 
             //printing some of the messages
+            /*
             for (int i = 0; i < 50; i++)
             {
                 calendar.setTimeInMillis(messages.get(i).timestamp);
@@ -88,7 +87,8 @@ public class MainScreen extends AppCompatActivity {
                 myText += "time: " + formatter.format(calendar.getTime()) + " number: " +
                         messages.get(i).phoneNum + "\n";
             }
-            List<ContactData> contacts = getContacts();
+            */
+
             int count = 0;
             //sorting the messages by number and showing them
             for (MessageData message : messages)
@@ -98,16 +98,47 @@ public class MainScreen extends AppCompatActivity {
                 boolean newNum = true;
                 for (ContactData contact : contacts)
                 {
-                    if(contact.phoneNum.get(0).compareTo(message.phoneNum) == 0) {
+                    if(contact.phoneNum.get(0).compareTo(formatPhoneNum(message.phoneNum)) == 0) {
                         newNum = false;
                         contact.addMessage(message);
                     }
                 }
+                /* messages with no contact
                 if (newNum) {
                     contacts.add(new ContactData(message.phoneNum, message));
                 }
+                */
                 count++;
             }
+
+            //just need this to get the set dates since that's where their
+            //contact deadlines get set rn
+            for (ContactData contact : contacts){
+                contact.toString();
+            }
+            //sorts the contacts from most recently messaged to least recently
+            Collections.sort(contacts, new Comparator<ContactData>() {
+                @Override
+                public int compare(ContactData c1, ContactData c2)
+                {
+                    if (c1.deadlineHere && !c2.deadlineHere)
+                    {
+                        return -1;
+                    }
+                    else if (!c1.deadlineHere && c2.deadlineHere)
+                    {
+                        return 1;
+                    }
+                    else if (c1.deadlineHere && c2.deadlineHere)
+                    {
+                        return c1.lastMessaged.compareTo(c2.lastMessaged);
+                    }
+                    else
+                    {
+                        return c2.lastMessaged.compareTo(c1.lastMessaged);
+                    }
+                }
+            });
 
             //showing the contact data
             for (ContactData contact : contacts)
@@ -121,6 +152,15 @@ public class MainScreen extends AppCompatActivity {
 
             lView.addView(toShow);
         }
+    }
+
+    public String formatPhoneNum(String num)
+    {
+        //only get the last 9 digits if there are more than the normal amount
+        if (num.length() > 10) {
+            return num.substring(num.length() - 10, num.length());
+        }
+        else return num;
     }
 
     //github try1
@@ -194,7 +234,7 @@ public class MainScreen extends AppCompatActivity {
             ContactData c = new ContactData();
             c.id = id;
             c.name = name;
-            c.phoneNum.add(number);
+            c.addPhoneNumber(number);
             contacts.add(c);
         }
 
