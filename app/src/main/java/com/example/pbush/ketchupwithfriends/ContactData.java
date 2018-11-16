@@ -18,12 +18,12 @@ public class ContactData implements Comparable<ContactData> {
     public String name; //name of the contact
     public List<String> phoneNum; //phone number(s) of the contact
     public List<MessageData> messages; //messages sent to the contact
-    public Calendar nextMessageDeadline; //the next time this contact will need to be messaged to keep the streak
+    public long nextMessageDeadline; //the next time this contact will need to be messaged to keep the streak
     public boolean deadlineHere;
     public int daysPerDeadline; //the amount of days that can pass between messages before breaking the streak
     public int relationshipPoints; //the "points" assigned to this contact
     public int streak; //the streak of consecutive times the contact has been messaged daily
-    public Calendar lastMessaged;
+    public long lastMessaged;
 
     public ContactData()
     {
@@ -31,11 +31,9 @@ public class ContactData implements Comparable<ContactData> {
         id = "";
         name = "";
         messages = new ArrayList<MessageData>();
-        lastMessaged = Calendar.getInstance();
-        lastMessaged.setTimeInMillis(0);
+        lastMessaged = 0;
         daysPerDeadline = 0;
-        nextMessageDeadline = Calendar.getInstance();;
-        nextMessageDeadline.setTimeInMillis(0);
+        nextMessageDeadline = 0;
         deadlineHere = false;
         relationshipPoints = 0;
         streak = 0;
@@ -48,11 +46,9 @@ public class ContactData implements Comparable<ContactData> {
         addPhoneNumber(num);
         messages = new ArrayList<MessageData>();
         messages.add(m);
-        lastMessaged = Calendar.getInstance();
-        lastMessaged.setTimeInMillis(0);
+        lastMessaged = 0;
         daysPerDeadline = 0;
-        nextMessageDeadline = Calendar.getInstance();;
-        nextMessageDeadline.setTimeInMillis(0);
+        nextMessageDeadline = 0;
         deadlineHere = false;
         relationshipPoints = 0;
         streak = 0;
@@ -63,10 +59,8 @@ public class ContactData implements Comparable<ContactData> {
         messages.add(m);
         //checking if the last messaged time needs updated
         //need to expand this to also update the next message deadline too
-        Calendar cal = Calendar.getInstance();
-        cal.setTimeInMillis(m.timestamp);
-        if (lastMessaged.before(cal))
-            lastMessaged = cal;
+        if (lastMessaged < m.timestamp)
+            lastMessaged = m.timestamp;
         return;
     }
 
@@ -83,17 +77,16 @@ public class ContactData implements Comparable<ContactData> {
     public void setContactFrequency(int days)
     {
         daysPerDeadline = days;
-        nextMessageDeadline = (Calendar) lastMessaged.clone();
-        nextMessageDeadline.add(Calendar.DATE, days);
-        if (nextMessageDeadline.before(Calendar.getInstance()))
+        nextMessageDeadline = lastMessaged + 500000;
+        if (Calendar.getInstance().after(nextMessageDeadline))
             deadlineHere = true;
     }
 
     //to update the deadline when a new-er message is inputted
     public void updateContactDeadline(long time)
     {
-        nextMessageDeadline.setTimeInMillis(time);
-        nextMessageDeadline.add(Calendar.DATE, daysPerDeadline);
+        nextMessageDeadline = time;
+        nextMessageDeadline += daysPerDeadline * 50000;
     }
 
     public String toString()
@@ -105,8 +98,8 @@ public class ContactData implements Comparable<ContactData> {
                     "\nPhone number: " + phoneNum.get(0) +
                     "\nNum Messages: " + messages.size() +
                     "\nRelationship Points: " + relationshipPoints +
-                    "\nLast Messaged:" + formatter.format(lastMessaged.getTime()) +
-                    "\nNext Deadline:" + formatter.format(nextMessageDeadline.getTime()) +
+                    "\nLast Messaged:" + formatter.format(lastMessaged) +
+                    "\nNext Deadline:" + formatter.format(nextMessageDeadline) +
                     "\nDeadline?:" + deadlineHere +
                     "\n";
         }

@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -21,6 +22,22 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TabHost;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,8 +47,22 @@ import java.util.Date;
 import java.util.Calendar;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.jar.Attributes;
 
 public class MainScreen extends AppCompatActivity {
+
+    //firebase items
+    private FirebaseAuth mAuth;
+    private FirebaseAuth.AuthStateListener mAuthListener;
+    private FirebaseDatabase mDatabase;
+    private DatabaseReference mDatabaseContacts;
+    private GoogleSignInClient mGoogleSignInClient;
+    private Button signInButton;
+    private Button saveButton;
+
+    //the messages and contacts
+    private List<MessageData> mMessages;
+    private List<ContactData> mContacts;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,109 +82,43 @@ public class MainScreen extends AppCompatActivity {
         spec.setIndicator("Achievements");
         host.addTab(spec);
 
-        //getting permission from the user to access message and contact data
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.READ_CONTACTS)
-                != PackageManager.PERMISSION_GRANTED)
-        {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.READ_CONTACTS},
-                    1);
-        }
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.READ_SMS)
-                != PackageManager.PERMISSION_GRANTED)
-        {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.READ_SMS},
-                    2);
-        }
-        //read in messages if we have access to it
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS)
-                == PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)
-                        == PackageManager.PERMISSION_GRANTED)
-        {
-            DateFormat formatter = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss");
-            Calendar calendar = Calendar.getInstance();
-            List<MessageData> messages = getSentMessages();
-            List<ContactData> contacts = getContacts();
-            String myText = "";
-
-            //printing some of the messages
-            /*
-            for (int i = 0; i < 50; i++)
-            {
-                calendar.setTimeInMillis(messages.get(i).timestamp);
-
-                myText += "time: " + formatter.format(calendar.getTime()) + " number: " +
-                        messages.get(i).phoneNum + "\n";
+        signInButton = findViewById(R.id.signInButton);
+        signInButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(MainScreen.this, FirebaseUIActivity.class);
+                startActivity(i);
             }
-            */
+        });
 
-            int count = 0;
-            //sorting the messages by number and showing them
-            for (MessageData message : messages)
-            {
-                //checking if the phone number already is in a contactData obj
-                //this will be fixed later when we just get data from contacts
-                boolean newNum = true;
-                for (ContactData contact : contacts)
+        //setting the save button to save info when pressed
+        saveButton = findViewById(R.id.saveButton);
+        saveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                saveInfo();
+            }
+        });
+
+        signInButton.setVisibility(View.INVISIBLE);
+
+        mAuth = FirebaseAuth.getInstance();
+
+        mDatabase = FirebaseDatabase.getInstance();
+        mDatabaseContacts = mDatabase.getReference("contacts");
+
+        mAuthListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+
+                //they are signed in
+                if(firebaseAuth.getCurrentUser() != null)
                 {
-                    if(contact.phoneNum.get(0).compareTo(formatPhoneNum(message.phoneNum)) == 0) {
-                        newNum = false;
-                        contact.addMessage(message);
-                    }
+                    //hide the sign in button
+                    signInButton.setVisibility(View.INVISIBLE);
                 }
-                /* messages with no contact
-                if (newNum) {
-                    contacts.add(new ContactData(message.phoneNum, message));
-                }
-                */
-                count++;
             }
-
-            //just need this to get the set dates since that's where their
-            //contact deadlines get set rn
-            for (ContactData contact : contacts){
-                contact.toString();
-            }
-            //sorts the contacts from most recently messaged to least recently
-            Collections.sort(contacts, new Comparator<ContactData>() {
-                @Override
-                public int compare(ContactData c1, ContactData c2)
-                {
-                    if (c1.deadlineHere && !c2.deadlineHere)
-                    {
-                        return -1;
-                    }
-                    else if (!c1.deadlineHere && c2.deadlineHere)
-                    {
-                        return 1;
-                    }
-                    else if (c1.deadlineHere && c2.deadlineHere)
-                    {
-                        return c1.lastMessaged.compareTo(c2.lastMessaged);
-                    }
-                    else
-                    {
-                        return c2.lastMessaged.compareTo(c1.lastMessaged);
-                    }
-                }
-            });
-
-            //showing the contact data
-            for (ContactData contact : contacts)
-            {
-                myText += contact.toString();
-            }
-
-            LinearLayout lView = (LinearLayout)findViewById(R.id.scrolllinearlayout);
-            TextView toShow = new TextView(this);
-            toShow.setText(myText);
-
-            lView.addView(toShow);
-        }
+        };
     }
 
     @Override
@@ -176,7 +141,6 @@ public class MainScreen extends AppCompatActivity {
         else return num;
     }
 
-    //github try1
     public List<MessageData> getSentMessages()
     {
         Uri uriSms = Uri.parse("content://sms/sent");
@@ -268,5 +232,183 @@ public class MainScreen extends AppCompatActivity {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.activity_main_actions, menu);
         return true;
+    }
+
+    public void updateUI(FirebaseUser user)
+    {
+        if(user == null)
+        {
+            //sign in/create an account with google in the firebase UI
+            //creating the firebase sign in page
+            signInButton.setVisibility(View.VISIBLE);
+        }
+        else{
+            Log.d("sign in", "signed in!");
+            //getNewInfo();
+            getSavedInfo();
+        }
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        mAuth.addAuthStateListener(mAuthListener);
+        // Check if user is signed in (non-null) and update UI accordingly.
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        updateUI(currentUser);
+        getSavedInfo();
+    }
+
+    public void saveInfo()
+    {
+        //getNewInfo();
+        mDatabaseContacts.setValue(mContacts);
+        Log.d("save info", "saved!");
+        // Read from the database
+        mDatabaseContacts.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                // This method is called once with the initial value and again
+                // whenever data at this location is updated.
+                for (DataSnapshot snap : dataSnapshot.getChildren()){
+                    mContacts.add(snap.getValue(ContactData.class));
+                    Log.d("write contacts", "Value is: " + mContacts.get(0));
+                }
+                //String value = ;
+                writeDataToScreen();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                // Failed to read value
+                Log.w("read contacts", "Failed to read value.", error.toException());
+            }
+        });
+    }
+
+    public void getSavedInfo()
+    {
+        DatabaseReference test1 = mDatabase.getReference("testing");
+        mDatabaseContacts.orderByValue();
+        mDatabaseContacts.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                // This method is called once with the initial value and again
+                // whenever data at this location is updated.
+                mContacts = new ArrayList<ContactData>();
+                for (DataSnapshot snap : dataSnapshot.getChildren()){
+
+                    mContacts.add(snap.getValue(ContactData.class));
+                    Log.d("read contacts", "Value is: " + mContacts.get(0));
+                }
+                //String value = ;
+                writeDataToScreen();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                // Failed to read value
+                Log.w("read contacts", "Failed to read value.", error.toException());
+            }
+        });
+    }
+
+    public void getNewInfo() {
+        //getting permission from the user to access message and contact data
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_CONTACTS)
+                != PackageManager.PERMISSION_GRANTED)
+        {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.READ_CONTACTS},
+                    1);
+        }
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_SMS)
+                != PackageManager.PERMISSION_GRANTED)
+        {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.READ_SMS},
+                    2);
+        }
+        //read in messages if we have access to it
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS)
+                == PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)
+                        == PackageManager.PERMISSION_GRANTED)
+        {
+            DateFormat formatter = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss");
+            Calendar calendar = Calendar.getInstance();
+            mMessages = getSentMessages();
+            mContacts = getContacts();
+
+            int count = 0;
+            //sorting the messages by number and showing them
+            for (MessageData message : mMessages)
+            {
+                //checking if the phone number already is in a contactData obj
+                //this will be fixed later when we just get data from contacts
+                boolean newNum = true;
+                for (ContactData contact : mContacts)
+                {
+                    if(contact.phoneNum.get(0).compareTo(formatPhoneNum(message.phoneNum)) == 0) {
+                        newNum = false;
+                        contact.addMessage(message);
+                    }
+                }
+
+                count++;
+            }
+
+            //just need this to get the set dates since that's where their
+            //contact deadlines get set rn
+            for (ContactData contact : mContacts){
+                contact.toString();
+            }
+            //sorts the contacts from most recently messaged to least recently
+            Collections.sort(mContacts, new Comparator<ContactData>() {
+                @Override
+                public int compare(ContactData c1, ContactData c2)
+                {
+                    if (c1.deadlineHere && !c2.deadlineHere)
+                    {
+                        return -1;
+                    }
+                    else if (!c1.deadlineHere && c2.deadlineHere)
+                    {
+                        return 1;
+                    }
+                    else if (c1.deadlineHere && c2.deadlineHere)
+                    {
+                        if (c1.lastMessaged > c2.lastMessaged)
+                        return 1;
+                        else return 0;
+                    }
+                    else
+                    {
+                        if (c1.lastMessaged < c2.lastMessaged)
+                            return 1;
+                        else return 0;
+                    }
+                }
+            });
+
+
+        }
+    }
+
+    public void writeDataToScreen(){
+        String myText = "";
+        //showing the contact data
+        for (ContactData contact : mContacts)
+        {
+            myText += contact.toString();
+        }
+
+        LinearLayout lView = (LinearLayout)findViewById(R.id.scrolllinearlayout);
+        TextView toShow = new TextView(this);
+        toShow.setText(myText);
+
+        lView.addView(toShow);
     }
 }

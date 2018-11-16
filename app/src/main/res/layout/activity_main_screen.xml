@@ -7,6 +7,14 @@
     android:layout_height="match_parent"
     tools:context="com.example.pbush.ketchupwithfriends.MainScreen">
 
+    <Button
+        android:id="@+id/signInButton"
+        android:layout_width="179dp"
+        android:layout_height="56dp"
+        android:text="Sign In"
+        tools:layout_editor_absoluteX="103dp"
+        tools:layout_editor_absoluteY="227dp" />
+
     <TabHost
         android:id="@+id/tabHost"
         android:layout_width="match_parent"
@@ -43,7 +51,23 @@
                             android:id="@+id/scrolllinearlayout"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="vertical" />
+                            android:orientation="vertical" >
+
+                            <GridLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent">
+
+                                <Button
+                                    android:id="@+id/saveButton"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:text="Save"
+                                    android:visibility="visible"
+                                    tools:layout_editor_absoluteX="103dp"
+                                    tools:layout_editor_absoluteY="227dp" />
+                            </GridLayout>
+                        </LinearLayout>
+
                     </ScrollView>
                 </LinearLayout>
 
