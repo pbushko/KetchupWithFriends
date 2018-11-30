@@ -18,8 +18,11 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -59,6 +62,10 @@ public class MainScreen extends AppCompatActivity {
     private GoogleSignInClient mGoogleSignInClient;
     private Button signInButton;
     private Button saveButton;
+    private Button getInputButton;
+    private Button submitInputButton;
+
+    private EditText userNum;
 
     //the messages and contacts
     private List<MessageData> mMessages;
@@ -90,6 +97,28 @@ public class MainScreen extends AppCompatActivity {
                 startActivity(i);
             }
         });
+
+        getInputButton = findViewById(R.id.set_time_button);
+        getInputButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setContentView(R.layout.get_contact_frequency_screen);
+                Spinner staticSpinner = (Spinner) findViewById(R.id.time_option_spinner);
+                userNum = (EditText) findViewById(R.id.user_num_input);
+                userNum.setTransformationMethod(null);
+                GetUserInput.setInputScreen(MainScreen.this, staticSpinner);
+                submitInputButton = findViewById(R.id.ok_button);
+                submitInputButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        setContentView(R.layout.activity_main_screen);
+                        String num = userNum.getText().toString();
+                        Log.d("userNum", "num is: " + num);
+                    }
+                });
+            }
+        });
+
 
         //setting the save button to save info when pressed
         saveButton = findViewById(R.id.saveButton);
@@ -259,7 +288,7 @@ public class MainScreen extends AppCompatActivity {
         mAuth.addAuthStateListener(mAuthListener);
         // Check if user is signed in (non-null) and update UI accordingly.
         FirebaseUser currentUser = mAuth.getCurrentUser();
-        updateUI(currentUser);
+        //updateUI(currentUser);
     }
 
     public void saveInfo()
