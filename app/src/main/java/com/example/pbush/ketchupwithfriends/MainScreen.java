@@ -59,11 +59,14 @@ public class MainScreen extends AppCompatActivity {
     private FirebaseAuth.AuthStateListener mAuthListener;
     private FirebaseDatabase mDatabase;
     private DatabaseReference mDatabaseContacts;
+    private DatabaseReference mDatabaseLastScrape;
     private GoogleSignInClient mGoogleSignInClient;
     private Button signInButton;
     private Button saveButton;
     private Button getInputButton;
     private Button submitInputButton;
+
+    private long lastDataScrape;
 
     private EditText userNum;
 
@@ -135,6 +138,7 @@ public class MainScreen extends AppCompatActivity {
 
         mDatabase = FirebaseDatabase.getInstance();
         mDatabaseContacts = mDatabase.getReference("contacts");
+        mDatabaseLastScrape = mDatabase.getReference("lastScrape");
 
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
@@ -185,6 +189,9 @@ public class MainScreen extends AppCompatActivity {
 
     public List<MessageData> parseCursorArray(Cursor cursor)
     {
+
+        long now = Calendar.getInstance().getTimeInMillis();
+        Log.d("message data", "last data scrape: " + lastDataScrape + " Now: " + now);
         if(null == cursor || 0 == cursor.getCount())
         {
             return new ArrayList<MessageData>();
@@ -192,18 +199,28 @@ public class MainScreen extends AppCompatActivity {
         List<MessageData> messages = new ArrayList<MessageData>();
         try
         {
-            for(cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext())
-            {
-                MessageData singleSms = new MessageData();
-                singleSms.id = cursor.getInt(cursor.getColumnIndexOrThrow("_id"));
-                String temp = cursor.getString(cursor.getColumnIndexOrThrow("address"));
-                //need to remove any dashes from the phone number
-                singleSms.phoneNum = formatPhoneNumber(temp);
-                singleSms.timestamp = cursor.getLong(cursor.getColumnIndexOrThrow("date"));
+            long lastTimeStamp = now + 1;
+            //only getting the messages that weren't scraped since last opening of the app
 
-                messages.add(singleSms);
+            int numNewMessages = 0;
+            for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
+                if (lastTimeStamp > lastDataScrape) {
+                    MessageData singleSms = new MessageData();
+                    singleSms.id = cursor.getInt(cursor.getColumnIndexOrThrow("_id"));
+                    String temp = cursor.getString(cursor.getColumnIndexOrThrow("address"));
+                    //need to remove any dashes from the phone number
+                    singleSms.phoneNum = formatPhoneNumber(temp);
+                    singleSms.timestamp = cursor.getLong(cursor.getColumnIndexOrThrow("date"));
+                    lastTimeStamp = singleSms.timestamp;
+                    messages.add(singleSms);
+                    numNewMessages++;
+                    //Log.d("newMessageScrape", "Num new messages: " + numNewMessages);
+                }
+                else {
+                    cursor.moveToLast();
+                }
             }
-
+            Log.d("newMessageScrape", "Num new messages: " + numNewMessages);
         }
         catch (Exception e)
         {
@@ -211,7 +228,7 @@ public class MainScreen extends AppCompatActivity {
         }
 
         cursor.close();
-
+        lastDataScrape = now;
         return messages;
     }
 
@@ -276,8 +293,10 @@ public class MainScreen extends AppCompatActivity {
         else{
             Log.d("sign in", "signed in!");
             signInButton.setVisibility(View.INVISIBLE);
-            //getNewInfo();
+            //getting the saved and new info
+            mContacts = new ArrayList<ContactData>();
             getSavedInfo();
+            //lastDataScrape = 0;
         }
     }
 
@@ -288,14 +307,12 @@ public class MainScreen extends AppCompatActivity {
         mAuth.addAuthStateListener(mAuthListener);
         // Check if user is signed in (non-null) and update UI accordingly.
         FirebaseUser currentUser = mAuth.getCurrentUser();
-        //updateUI(currentUser);
+        updateUI(currentUser);
     }
 
     public void saveInfo()
     {
-        //getNewInfo();
         mDatabaseContacts.setValue(mContacts);
-        Log.d("save info", "saved!");
         // Read from the database
         mDatabaseContacts.addValueEventListener(new ValueEventListener() {
             @Override
@@ -304,12 +321,28 @@ public class MainScreen extends AppCompatActivity {
                 // whenever data at this location is updated.
                 for (DataSnapshot snap : dataSnapshot.getChildren()){
                     mContacts.add(snap.getValue(ContactData.class));
-                    Log.d("write contacts", "Value is: " + mContacts.get(0));
+                    //Log.d("write contacts", "Value is: " + mContacts.get(mContacts.size()-1));
                 }
-                //String value = ;
-                writeDataToScreen();
             }
-
+            @Override
+            public void onCancelled(DatabaseError error) {
+                // Failed to read value
+                Log.w("read contacts", "Failed to read value.", error.toException());
+            }
+        });
+        mDatabaseLastScrape.child("lastDataScrape").setValue(lastDataScrape);
+        // Read from the database
+        mDatabaseLastScrape.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                // This method is called once with the initial value and again
+                // whenever data at this location is updated.
+                for (DataSnapshot snap : dataSnapshot.getChildren()){
+                    lastDataScrape = snap.getValue(Long.class);
+                    Log.d("save data", "saved last data scrape time! it was: " + lastDataScrape);
+                }
+                Log.d("save data", "outside the scrape function");
+            }
             @Override
             public void onCancelled(DatabaseError error) {
                 // Failed to read value
@@ -320,32 +353,52 @@ public class MainScreen extends AppCompatActivity {
 
     public void getSavedInfo()
     {
-        DatabaseReference test1 = mDatabase.getReference("testing");
+        Toast.makeText(this, "Getting save info", Toast.LENGTH_SHORT).show();
         mDatabaseContacts.orderByValue();
         mDatabaseContacts.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 // This method is called once with the initial value and again
                 // whenever data at this location is updated.
-                mContacts = new ArrayList<ContactData>();
                 for (DataSnapshot snap : dataSnapshot.getChildren()){
-
                     mContacts.add(snap.getValue(ContactData.class));
-                    Log.d("read contacts", "Value is: " + mContacts.get(0));
+                    Log.d("read contacts", "contact: " + mContacts.get(0));
                 }
-                //String value = ;
-                writeDataToScreen();
+                Log.d("sign in", "outside the read contacts function");
+                //putting the data onto the screen
+                //writeDataToScreen();
             }
-
             @Override
             public void onCancelled(DatabaseError error) {
                 // Failed to read value
                 Log.w("read contacts", "Failed to read value.", error.toException());
             }
         });
+        //trying to get the last scraped time
+        mDatabaseLastScrape.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                //lastDataScrape = dataSnapshot.getValue(Long.class);
+                for (DataSnapshot snap : dataSnapshot.getChildren()){
+                    lastDataScrape = snap.getValue(Long.class);
+                    Log.d("sign in", "last data scrape time! it was: " + lastDataScrape);
+                }
+                Log.d("sign in", "outside the scrape function");
+                getNewInfo();
+                writeDataToScreen();
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.w("read contacts", "Failed to read value.", databaseError.toException());
+            }
+        });
+        Log.d("sign in", "last data scrape: " + lastDataScrape);
+        Toast.makeText(this, "got save info", Toast.LENGTH_SHORT).show();
     }
 
     public void getNewInfo() {
+        Toast.makeText(this, "Getting new info", Toast.LENGTH_SHORT).show();
+        Log.d("sign in", "last data scrape: " + lastDataScrape);
         //getting permission from the user to access message and contact data
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.READ_CONTACTS)
@@ -369,12 +422,10 @@ public class MainScreen extends AppCompatActivity {
                 ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)
                         == PackageManager.PERMISSION_GRANTED)
         {
-            DateFormat formatter = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss");
-            Calendar calendar = Calendar.getInstance();
+
             mMessages = getSentMessages();
             mContacts = getContacts();
 
-            int count = 0;
             //sorting the messages by number and showing them
             for (MessageData message : mMessages)
             {
@@ -388,53 +439,25 @@ public class MainScreen extends AppCompatActivity {
                         contact.addMessage(message);
                     }
                 }
-
-                count++;
             }
-
             //just need this to get the set dates since that's where their
             //contact deadlines get set rn
             for (ContactData contact : mContacts){
                 contact.toString();
             }
-            //sorts the contacts from most recently messaged to least recently
-            Collections.sort(mContacts, new Comparator<ContactData>() {
-                @Override
-                public int compare(ContactData c1, ContactData c2)
-                {
-                    if (c1.deadlineHere && !c2.deadlineHere)
-                    {
-                        return -1;
-                    }
-                    else if (!c1.deadlineHere && c2.deadlineHere)
-                    {
-                        return 1;
-                    }
-                    else if (c1.deadlineHere && c2.deadlineHere)
-                    {
-                        if (c1.lastMessaged > c2.lastMessaged)
-                        return 1;
-                        else return 0;
-                    }
-                    else
-                    {
-                        if (c1.lastMessaged < c2.lastMessaged)
-                            return 1;
-                        else return 0;
-                    }
-                }
-            });
-
-
+            sortContacts();
         }
+        Toast.makeText(this, "Got new info", Toast.LENGTH_SHORT).show();
     }
 
     public void writeDataToScreen(){
+        Log.d("write data to screen", "writing data...");
         String myText = "";
         //showing the contact data
         for (ContactData contact : mContacts)
         {
             myText += contact.toString();
+            //Log.d("write data to screen", "contact: " + contact.toString());
         }
 
         LinearLayout lView = (LinearLayout)findViewById(R.id.scrolllinearlayout);
@@ -442,5 +465,37 @@ public class MainScreen extends AppCompatActivity {
         toShow.setText(myText);
 
         lView.addView(toShow);
+        Log.d("write data to screen", "done writing data");
+    }
+
+    //sorts the contacts from most recently messaged to least recently
+    private void sortContacts()
+    {
+        Collections.sort(mContacts, new Comparator<ContactData>() {
+            @Override
+            public int compare(ContactData c1, ContactData c2)
+            {
+                if (c1.deadlineHere && !c2.deadlineHere)
+                {
+                    return -1;
+                }
+                else if (!c1.deadlineHere && c2.deadlineHere)
+                {
+                    return 1;
+                }
+                else if (c1.deadlineHere && c2.deadlineHere)
+                {
+                    if (c1.lastMessaged > c2.lastMessaged)
+                        return 1;
+                    else return 0;
+                }
+                else
+                {
+                    if (c1.lastMessaged < c2.lastMessaged)
+                        return 1;
+                    else return 0;
+                }
+            }
+        });
     }
 }
