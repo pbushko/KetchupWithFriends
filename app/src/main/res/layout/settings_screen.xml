@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -16,6 +17,7 @@
             android:layout_width="match_parent"
             android:layout_height="78dp"
             android:text="Settings"
+            android:textAppearance="@style/TextAppearance.AppCompat.Display2"
             tools:layout_editor_absoluteX="178dp"
             tools:layout_editor_absoluteY="151dp" />
 
@@ -25,23 +27,20 @@
             android:layout_height="wrap_content"
             android:text="Log Out" />
 
-        <Switch
-            android:id="@+id/switch1"
+        <CheckBox
+            android:id="@+id/checkBox"
+            style="@android:style/Widget.CompoundButton.CheckBox"
             android:layout_width="match_parent"
-            android:layout_height="87dp"
-            android:checked="false"
-            android:text="Option1"
-            tools:layout_editor_absoluteX="260dp"
-            tools:layout_editor_absoluteY="241dp"
-            tools:text="Option1" />
+            android:layout_height="62dp"
+            android:checked="true"
+            android:text="Music" />
 
-        <Switch
-            android:id="@+id/switch2"
+        <CheckBox
+            android:id="@+id/checkBox2"
             android:layout_width="match_parent"
-            android:layout_height="91dp"
-            android:text="Option2"
-            tools:layout_editor_absoluteX="260dp"
-            tools:layout_editor_absoluteY="321dp" />
+            android:layout_height="64dp"
+            android:text="Sound Effects" />
+
     </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>
