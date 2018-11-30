@@ -54,6 +54,8 @@ import java.util.jar.Attributes;
 
 public class MainScreen extends AppCompatActivity {
 
+    final private int LOADED = 1;
+    private int loaded;
     //firebase items
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
@@ -67,6 +69,7 @@ public class MainScreen extends AppCompatActivity {
     private Button submitInputButton;
 
     private long lastDataScrape;
+
 
     private EditText userNum;
 
@@ -356,8 +359,12 @@ public class MainScreen extends AppCompatActivity {
                 }
                 Log.d("sign in", "outside the read contacts function");
                 //putting the data onto the screen
-                getNewInfo();
-                writeDataToScreen();
+                if(loaded == LOADED) {
+                    getNewInfo();
+                    writeDataToScreen();
+                }
+                else
+                    loaded = LOADED;
             }
             @Override
             public void onCancelled(DatabaseError error) {
@@ -374,6 +381,12 @@ public class MainScreen extends AppCompatActivity {
                     Log.d("sign in", "last data scrape time! it was: " + lastDataScrape);
                 }
                 Log.d("sign in", "outside the scrape function");
+                if(loaded == LOADED) {
+                    getNewInfo();
+                    writeDataToScreen();
+                }
+                else
+                    loaded = LOADED;
             }
             @Override
             public void onCancelled(DatabaseError databaseError) {
@@ -412,7 +425,19 @@ public class MainScreen extends AppCompatActivity {
         {
 
             mMessages = getSentMessages();
-            mContacts = getContacts();
+            List<ContactData> c = getContacts();
+            int sze = mContacts.size();
+            //only add new contacts if they are not already in our contact list
+            for (ContactData c1 : c)
+            {
+                for (int i = 0; i < sze; i++)
+                {
+                    if (c1.compareTo(mContacts.get(i)) != 0)
+                    {
+                        mContacts.add(c1);
+                    }
+                }
+            }
 
             //sorting the messages by number and showing them
             for (MessageData message : mMessages)
@@ -442,11 +467,16 @@ public class MainScreen extends AppCompatActivity {
             }
             Log.d("rem contacts", "original size: " + contactOrigLen);
             idx--;
-            for (int i = contactOrigLen-1; i > 0; i--)
-            {
-                if(indxToRem[idx] == i) {
-                    mContacts.remove(i);
-                    idx--;
+            //if there are any contacts to change at all
+            if (idx >= 0) {
+                for (int i = contactOrigLen - 1; i > 0; i--) {
+                    if (idx < 0) {
+                        i = 0;
+                    }
+                    else if (indxToRem[idx] == i) {
+                        mContacts.remove(i);
+                        idx--;
+                    }
                 }
             }
             Log.d("rem contacts", "new size: " + mContacts.size());
