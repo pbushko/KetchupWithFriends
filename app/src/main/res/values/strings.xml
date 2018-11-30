@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">KetchupWithFriends</string>
+
+    <string name="achievements">meWOW</string>
+
     <string name="title_activity_settings">SettingsActivity</string>
 
     <!-- Strings related to Settings -->
