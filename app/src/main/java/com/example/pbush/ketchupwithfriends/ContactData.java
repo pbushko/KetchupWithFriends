@@ -14,6 +14,8 @@ import java.text.SimpleDateFormat;
  */
 
 public class ContactData implements Comparable<ContactData> {
+    final public static int MS_PER_HOUR = 3600000;
+
     public String id; //id number of the contact
     public String name; //name of the contact
     public List<String> phoneNum; //phone number(s) of the contact
@@ -74,32 +76,36 @@ public class ContactData implements Comparable<ContactData> {
         return;
     }
 
-    public void setContactFrequency(int days)
+    public void setContactFrequency(int hours)
     {
-        daysPerDeadline = days;
-        nextMessageDeadline = lastMessaged + 500000;
-        if (Calendar.getInstance().after(nextMessageDeadline))
-            deadlineHere = true;
+        daysPerDeadline = hours;
+        nextMessageDeadline = lastMessaged + (hours * MS_PER_HOUR);
+        checkIfDeadlineHere();
+        Log.d("contact data", "set contact frequency for " + name + "!");
     }
 
-    //to update the deadline when a new-er message is inputted
-    public void updateContactDeadline(long time)
+    public void checkIfDeadlineHere()
     {
-        nextMessageDeadline = time;
-        nextMessageDeadline += daysPerDeadline * 50000;
+        if (Calendar.getInstance().getTimeInMillis() > (nextMessageDeadline))
+            deadlineHere = true;
+        else
+            deadlineHere = false;
+        return;
     }
 
     public String toString()
     {
         if (messages.size() != 0) {
             DateFormat formatter = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss");
-            setContactFrequency(5);
+            if(nextMessageDeadline == 0)
+                setContactFrequency(5);
             return "\nName: " + name +
                     "\nPhone number: " + phoneNum.get(0) +
                     "\nNum Messages: " + messages.size() +
                     "\nRelationship Points: " + relationshipPoints +
                     "\nLast Messaged:" + formatter.format(lastMessaged) +
                     "\nNext Deadline:" + formatter.format(nextMessageDeadline) +
+                    "\nDays per Deadline:" + daysPerDeadline +
                     "\nDeadline?:" + deadlineHere +
                     "\n";
         }

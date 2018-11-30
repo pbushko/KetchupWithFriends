@@ -70,6 +70,8 @@ public class MainScreen extends AppCompatActivity {
 
     private EditText userNum;
 
+    private int contactButtonId;
+
     //the messages and contacts
     private List<MessageData> mMessages;
     private List<ContactData> mContacts;
@@ -488,6 +490,8 @@ public class MainScreen extends AppCompatActivity {
                 //make a button that will let you set the time for them
                 Button btn= new Button(this);
                 btn.setText(contact.toString());
+                int num = Integer.parseInt(contact.phoneNum.get(0).substring(1));
+                btn.setId(num);
                 //on click, we want it to take us to the input time screen
                 btn.setOnClickListener(new View.OnClickListener()
                 {
@@ -499,19 +503,44 @@ public class MainScreen extends AppCompatActivity {
                         userNum = (EditText) findViewById(R.id.user_num_input);
                         userNum.setTransformationMethod(null);
                         GetUserInput.setInputScreen(MainScreen.this, staticSpinner);
+                        contactButtonId = view.getId();
                         submitInputButton = findViewById(R.id.ok_button);
                         submitInputButton.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                String spinner_item = staticSpinner.getSelectedItem().toString();
-                                setMainScreen();
-                                String num = userNum.getText().toString();
-                                Log.d("userNum", "num is: " + num + " spinner is: " + spinner_item);
+                                int num = Integer.parseInt(userNum.getText().toString());
+                                for (ContactData contact : mContacts){
+                                    if (Integer.parseInt(contact.phoneNum.get(0).substring(1)) == contactButtonId) {
+                                        int multiplier = 0;
+                                        switch (staticSpinner.getSelectedItem().toString())
+                                        {
+                                            case("Hour"):
+                                                multiplier = 1;
+                                                break;
+                                            case("Day"):
+                                                multiplier = 24;
+                                                break;
+                                            case("Week"):
+                                                multiplier = 7*24;
+                                                break;
+                                            // NOT IMPLEMENTED RIGHT NOW
+                                            case("Month"):
+                                                multiplier = 1;
+                                                break;
+                                            default:
+                                                multiplier = 1;
+                                                break;
+                                        }
+                                        contact.setContactFrequency(num*multiplier);
+                                        setMainScreen();
+                                    }
+                                }
                             }
                         });
                     }
                 });
                 lView.addView(btn);
+                //Log.d("userNum", "contact data: " + contact.name + " " + contact.nextMessageDeadline);
             }
         }
 
