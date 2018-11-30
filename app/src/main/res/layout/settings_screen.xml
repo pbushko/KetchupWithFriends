@@ -19,17 +19,25 @@
             tools:layout_editor_absoluteX="178dp"
             tools:layout_editor_absoluteY="151dp" />
 
+        <Button
+            android:id="@+id/logOutButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Log Out" />
+
         <Switch
             android:id="@+id/switch1"
-            android:layout_width="275dp"
+            android:layout_width="match_parent"
             android:layout_height="87dp"
+            android:checked="false"
             android:text="Option1"
             tools:layout_editor_absoluteX="260dp"
-            tools:layout_editor_absoluteY="241dp" />
+            tools:layout_editor_absoluteY="241dp"
+            tools:text="Option1" />
 
         <Switch
             android:id="@+id/switch2"
-            android:layout_width="275dp"
+            android:layout_width="match_parent"
             android:layout_height="91dp"
             android:text="Option2"
             tools:layout_editor_absoluteX="260dp"

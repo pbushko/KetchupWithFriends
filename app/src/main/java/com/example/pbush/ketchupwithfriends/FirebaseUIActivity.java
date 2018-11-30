@@ -7,6 +7,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import com.example.pbush.ketchupwithfriends.R;
 import com.firebase.ui.auth.AuthUI;
@@ -33,14 +34,19 @@ import java.util.List;
 public class FirebaseUIActivity extends AppCompatActivity {
 
     private static final int RC_SIGN_IN = 123;
+    private static final int SIGNED_IN = 1;
+    private static final int SIGNED_OUT = 0;
     private FirebaseAuth mAuth;
+    private FirebaseAuth.AuthStateListener mAuthListener;
     private GoogleSignInClient mGoogleSignInClient;
     private SignInButton googleSignInButton;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_firebase_ui);
+        Toast.makeText(this, "firebase", Toast.LENGTH_SHORT).show();
 
         googleSignInButton = (SignInButton) findViewById(R.id.googleSignInButton);
 
@@ -50,6 +56,7 @@ public class FirebaseUIActivity extends AppCompatActivity {
                 .build();
 
         mAuth = FirebaseAuth.getInstance();
+
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
 
         googleSignInButton.setOnClickListener(new View.OnClickListener()
@@ -100,6 +107,7 @@ public class FirebaseUIActivity extends AppCompatActivity {
                 // Google Sign In was successful, authenticate with Firebase
                 GoogleSignInAccount account = task.getResult(ApiException.class);
                 firebaseAuthWithGoogle(account);
+
             } catch (ApiException e) {
                 // Google Sign In failed, update UI appropriately
                 Log.w("google", "Google sign in failed", e);
@@ -121,7 +129,6 @@ public class FirebaseUIActivity extends AppCompatActivity {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d("google", "signInWithCredential:success");
                             FirebaseUser user = mAuth.getCurrentUser();
-                            //updateUI(user);
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w("google", "signInWithCredential:failure", task.getException());

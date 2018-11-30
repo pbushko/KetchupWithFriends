@@ -119,6 +119,7 @@ public class MainScreen extends AppCompatActivity {
                 }
             }
         };
+
     }
 
     @Override
@@ -241,9 +242,11 @@ public class MainScreen extends AppCompatActivity {
             //sign in/create an account with google in the firebase UI
             //creating the firebase sign in page
             signInButton.setVisibility(View.VISIBLE);
+
         }
         else{
             Log.d("sign in", "signed in!");
+            signInButton.setVisibility(View.INVISIBLE);
             //getNewInfo();
             getSavedInfo();
         }
@@ -252,11 +255,11 @@ public class MainScreen extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
+        Toast.makeText(this, "main", Toast.LENGTH_SHORT).show();
         mAuth.addAuthStateListener(mAuthListener);
         // Check if user is signed in (non-null) and update UI accordingly.
         FirebaseUser currentUser = mAuth.getCurrentUser();
         updateUI(currentUser);
-        getSavedInfo();
     }
 
     public void saveInfo()
