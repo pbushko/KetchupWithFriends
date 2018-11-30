@@ -17,7 +17,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:src="@drawable/tomato_thumbsup"
+        android:src="@drawable/tomato_yay_small"
         tools:layout_editor_absoluteX="138dp"
         tools:layout_editor_absoluteY="190dp" />
 

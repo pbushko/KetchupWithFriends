@@ -101,28 +101,7 @@ public class MainScreen extends AppCompatActivity {
                 startActivity(i);
             }
         });
-
-        getInputButton = findViewById(R.id.set_time_button);
-        getInputButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                setContentView(R.layout.get_contact_frequency_screen);
-                final Spinner staticSpinner = (Spinner) findViewById(R.id.time_option_spinner);
-                userNum = (EditText) findViewById(R.id.user_num_input);
-                userNum.setTransformationMethod(null);
-                GetUserInput.setInputScreen(MainScreen.this, staticSpinner);
-                submitInputButton = findViewById(R.id.ok_button);
-                submitInputButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        String spinner_item = staticSpinner.getSelectedItem().toString();
-                        setMainScreen();
-                        String num = userNum.getText().toString();
-                        Log.d("userNum", "num is: " + num + " spinner is: " + spinner_item);
-                    }
-                });
-            }
-        });
+        signInButton.setVisibility(View.INVISIBLE);
 
         //setting the save button to save info when pressed
         saveButton = findViewById(R.id.saveButton);
@@ -133,7 +112,9 @@ public class MainScreen extends AppCompatActivity {
             }
         });
 
-        signInButton.setVisibility(View.INVISIBLE);
+        TextView achievementText = (TextView) findViewById(R.id.achievements);
+        String text = "";
+
 
         writeDataToScreen();
     }
@@ -540,7 +521,6 @@ public class MainScreen extends AppCompatActivity {
                     }
                 });
                 lView.addView(btn);
-                //Log.d("userNum", "contact data: " + contact.name + " " + contact.nextMessageDeadline);
             }
         }
 
