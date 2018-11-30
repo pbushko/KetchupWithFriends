@@ -17,6 +17,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".Settings"
+            android:id="@id/action_settings"
+            android:parentActivityName=".MainScreen" >
+        </activity>
+        <activity android:name=".FirebaseUIActivity"></activity>
     </application>
 
 </manifest>
