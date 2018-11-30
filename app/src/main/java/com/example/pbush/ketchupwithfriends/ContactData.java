@@ -112,6 +112,11 @@ public class ContactData implements Comparable<ContactData> {
         }
     }
 
+    public int numMessages()
+    {
+        return messages.size();
+    }
+
     @Override
     public int compareTo(ContactData c)
     {

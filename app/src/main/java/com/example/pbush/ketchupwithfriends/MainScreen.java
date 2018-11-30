@@ -74,9 +74,8 @@ public class MainScreen extends AppCompatActivity {
     private List<MessageData> mMessages;
     private List<ContactData> mContacts;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    private void setMainScreen()
+    {
         setContentView(R.layout.activity_main_screen);
 
         TabHost host = (TabHost)findViewById(R.id.tabHost);
@@ -106,7 +105,7 @@ public class MainScreen extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 setContentView(R.layout.get_contact_frequency_screen);
-                Spinner staticSpinner = (Spinner) findViewById(R.id.time_option_spinner);
+                final Spinner staticSpinner = (Spinner) findViewById(R.id.time_option_spinner);
                 userNum = (EditText) findViewById(R.id.user_num_input);
                 userNum.setTransformationMethod(null);
                 GetUserInput.setInputScreen(MainScreen.this, staticSpinner);
@@ -114,14 +113,14 @@ public class MainScreen extends AppCompatActivity {
                 submitInputButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        setContentView(R.layout.activity_main_screen);
+                        String spinner_item = staticSpinner.getSelectedItem().toString();
+                        setMainScreen();
                         String num = userNum.getText().toString();
-                        Log.d("userNum", "num is: " + num);
+                        Log.d("userNum", "num is: " + num + " spinner is: " + spinner_item);
                     }
                 });
             }
         });
-
 
         //setting the save button to save info when pressed
         saveButton = findViewById(R.id.saveButton);
@@ -133,6 +132,14 @@ public class MainScreen extends AppCompatActivity {
         });
 
         signInButton.setVisibility(View.INVISIBLE);
+
+        writeDataToScreen();
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setMainScreen();
 
         mAuth = FirebaseAuth.getInstance();
 
@@ -362,11 +369,12 @@ public class MainScreen extends AppCompatActivity {
                 // whenever data at this location is updated.
                 for (DataSnapshot snap : dataSnapshot.getChildren()){
                     mContacts.add(snap.getValue(ContactData.class));
-                    Log.d("read contacts", "contact: " + mContacts.get(0));
+                    //Log.d("read contacts", "contact: " + mContacts.get(0));
                 }
                 Log.d("sign in", "outside the read contacts function");
                 //putting the data onto the screen
-                //writeDataToScreen();
+                getNewInfo();
+                writeDataToScreen();
             }
             @Override
             public void onCancelled(DatabaseError error) {
@@ -378,14 +386,11 @@ public class MainScreen extends AppCompatActivity {
         mDatabaseLastScrape.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                //lastDataScrape = dataSnapshot.getValue(Long.class);
                 for (DataSnapshot snap : dataSnapshot.getChildren()){
                     lastDataScrape = snap.getValue(Long.class);
                     Log.d("sign in", "last data scrape time! it was: " + lastDataScrape);
                 }
                 Log.d("sign in", "outside the scrape function");
-                getNewInfo();
-                writeDataToScreen();
             }
             @Override
             public void onCancelled(DatabaseError databaseError) {
@@ -440,6 +445,28 @@ public class MainScreen extends AppCompatActivity {
                     }
                 }
             }
+            //removing contacts to print if they have never been messaged
+            int contactOrigLen = mContacts.size();
+            int[] indxToRem = new int[contactOrigLen];
+            //changing the index so that if 0 needs to be removed, it can be
+            indxToRem[0] = -1;
+            int idx = 0;
+            for (int i = 0; i < contactOrigLen; i++)
+            {
+                if(mContacts.get(i).lastMessaged == 0) {
+                    indxToRem[idx++] = i;
+                }
+            }
+            Log.d("rem contacts", "original size: " + contactOrigLen);
+            idx--;
+            for (int i = contactOrigLen-1; i > 0; i--)
+            {
+                if(indxToRem[idx] == i) {
+                    mContacts.remove(i);
+                    idx--;
+                }
+            }
+            Log.d("rem contacts", "new size: " + mContacts.size());
             //just need this to get the set dates since that's where their
             //contact deadlines get set rn
             for (ContactData contact : mContacts){
@@ -453,18 +480,41 @@ public class MainScreen extends AppCompatActivity {
     public void writeDataToScreen(){
         Log.d("write data to screen", "writing data...");
         String myText = "";
+        LinearLayout lView = (LinearLayout)findViewById(R.id.scrolllinearlayout);
         //showing the contact data
-        for (ContactData contact : mContacts)
-        {
-            myText += contact.toString();
-            //Log.d("write data to screen", "contact: " + contact.toString());
+        if (mContacts != null) {
+            for (ContactData contact : mContacts) {
+
+                //make a button that will let you set the time for them
+                Button btn= new Button(this);
+                btn.setText(contact.toString());
+                //on click, we want it to take us to the input time screen
+                btn.setOnClickListener(new View.OnClickListener()
+                {
+                    public void onClick(View view)
+                    {
+                        //your write code
+                        setContentView(R.layout.get_contact_frequency_screen);
+                        final Spinner staticSpinner = (Spinner) findViewById(R.id.time_option_spinner);
+                        userNum = (EditText) findViewById(R.id.user_num_input);
+                        userNum.setTransformationMethod(null);
+                        GetUserInput.setInputScreen(MainScreen.this, staticSpinner);
+                        submitInputButton = findViewById(R.id.ok_button);
+                        submitInputButton.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                String spinner_item = staticSpinner.getSelectedItem().toString();
+                                setMainScreen();
+                                String num = userNum.getText().toString();
+                                Log.d("userNum", "num is: " + num + " spinner is: " + spinner_item);
+                            }
+                        });
+                    }
+                });
+                lView.addView(btn);
+            }
         }
 
-        LinearLayout lView = (LinearLayout)findViewById(R.id.scrolllinearlayout);
-        TextView toShow = new TextView(this);
-        toShow.setText(myText);
-
-        lView.addView(toShow);
         Log.d("write data to screen", "done writing data");
     }
 
@@ -475,15 +525,17 @@ public class MainScreen extends AppCompatActivity {
             @Override
             public int compare(ContactData c1, ContactData c2)
             {
-                if (c1.deadlineHere && !c2.deadlineHere)
+                boolean deadline1 = c1.deadlineHere;
+                boolean deadline2 = c2.deadlineHere;
+                if (deadline1 && !deadline2)
                 {
                     return -1;
                 }
-                else if (!c1.deadlineHere && c2.deadlineHere)
+                else if (!deadline1 && deadline2)
                 {
                     return 1;
                 }
-                else if (c1.deadlineHere && c2.deadlineHere)
+                else if (deadline1 && deadline2)
                 {
                     if (c1.lastMessaged > c2.lastMessaged)
                         return 1;
