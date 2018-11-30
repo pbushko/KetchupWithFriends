@@ -77,11 +77,14 @@
                     android:layout_height="match_parent"
                     android:orientation="vertical">
 
-                    <Button
-                        android:id="@+id/set_time_button"
-                        android:layout_width="match_parent"
+                    <ImageView
+                        android:id="@+id/tomato_chan"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="set time" />
+                        android:layout_gravity="center"
+                        android:src="@drawable/tomato_thumbsup_small"
+                        tools:layout_editor_absoluteX="138dp"
+                        tools:layout_editor_absoluteY="190dp" />
                 </LinearLayout>
 
             </FrameLayout>

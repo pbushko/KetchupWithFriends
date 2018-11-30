@@ -12,4 +12,13 @@
         android:id="@+id/googleSignInButton">
     </com.google.android.gms.common.SignInButton>
 
+    <ImageView
+        android:id="@+id/tomato_chan"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:src="@drawable/tomato_thumbsup"
+        tools:layout_editor_absoluteX="138dp"
+        tools:layout_editor_absoluteY="190dp" />
+
 </android.support.constraint.ConstraintLayout>
