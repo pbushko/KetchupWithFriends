@@ -13,13 +13,15 @@ public class MessageData implements Comparable<MessageData> {
     //nothing in the constructor; we will assign the items separately
     public MessageData()
     {
-        Log.d("kasarn's", "Help");
-        Log.d("kasarn's", "Trying this again");
+
     }
 
     //compares the phone numbers
     public int compareTo(MessageData m)
     {
+        //the timestamps must match
+        if (this.timestamp != m.timestamp)
+            return -1;
         return this.phoneNum.compareTo(m.phoneNum);
     }
 }
