@@ -13,7 +13,7 @@
         android:layout_height="52dp" />
 
     <ProgressBar
-        android:id="@+id/progressBar4"
+        android:id="@+id/progressBarTimeLeft"
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="232dp"
         android:layout_height="26dp"

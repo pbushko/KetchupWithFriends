@@ -357,7 +357,7 @@ public class MainScreen extends AppCompatActivity {
                 // This method is called once with the initial value and again
                 // whenever data at this location is updated.
                 for (DataSnapshot snap : dataSnapshot.getChildren()){
-                    //mContacts.add(snap.getValue(ContactData.class));
+                    mContacts.add(snap.getValue(ContactData.class));
                     //Log.d("read contacts", "contact: " + mContacts.get(0));
                 }
                 Log.d("sign in", "outside the read contacts function");
@@ -380,7 +380,7 @@ public class MainScreen extends AppCompatActivity {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot snap : dataSnapshot.getChildren()){
-                    //lastDataScrape = snap.getValue(Long.class);
+                    lastDataScrape = snap.getValue(Long.class);
                     Log.d("sign in", "last data scrape time! it was: " + lastDataScrape);
                 }
                 Log.d("sign in", "outside the scrape function");
