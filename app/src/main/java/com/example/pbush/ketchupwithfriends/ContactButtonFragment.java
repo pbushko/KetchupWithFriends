@@ -6,7 +6,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
@@ -21,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 public class ContactButtonFragment extends Fragment implements MainScreen.ContactButton{
 
     private ContactData contact;
+    private Button contactButton;
     private TextView nameText;
     private TextView timeLeftText;
     private ProgressBar progress;
@@ -32,6 +36,7 @@ public class ContactButtonFragment extends Fragment implements MainScreen.Contac
         nameText = (TextView) v.findViewById(R.id.name);
         timeLeftText = (TextView) v.findViewById(R.id.timeLeft);
         progress = (ProgressBar) v.findViewById(R.id.progressBarTimeLeft);
+        contactButton = (Button) v.findViewById(R.id.contact_button);
         return v;
     }
 
@@ -76,4 +81,63 @@ public class ContactButtonFragment extends Fragment implements MainScreen.Contac
             progress.setProgress(p);
         }
     }
+
+    @Override
+    public ContactData getButtonContact() {
+        return contact;
+    }
+
+    public Button getButton()
+    {
+        return contactButton;
+        /*
+        contactButton.setOnClickListener(new View.OnClickListener()
+        {
+            public void onClick(View view)
+            {
+                //your write code
+                setContentView(R.layout.get_contact_frequency_screen);
+                final Spinner staticSpinner = (Spinner) findViewById(R.id.time_option_spinner);
+                EditText userNum = (EditText) findViewById(R.id.user_num_input);
+                userNum.setTransformationMethod(null);
+                GetUserInput.setInputScreen(this, staticSpinner);
+                contactButtonId = view.getId();
+                submitInputButton = findViewById(R.id.ok_button);
+                submitInputButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        int num = Integer.parseInt(userNum.getText().toString());
+                        for (ContactData contact : mContacts){
+                            if (Integer.parseInt(contact.phoneNum.get(0).substring(1)) == contactButtonId) {
+                                int multiplier = 0;
+                                switch (staticSpinner.getSelectedItem().toString())
+                                {
+                                    case("Hour"):
+                                        multiplier = 1;
+                                        break;
+                                    case("Day"):
+                                        multiplier = 24;
+                                        break;
+                                    case("Week"):
+                                        multiplier = 7*24;
+                                        break;
+                                    // NOT IMPLEMENTED RIGHT NOW
+                                    case("Month"):
+                                        multiplier = 1;
+                                        break;
+                                    default:
+                                        multiplier = 1;
+                                        break;
+                                }
+                                contact.setContactFrequency(num*multiplier);
+                                setMainScreen();
+                            }
+                        }
+                    }
+                });
+            }
+        });
+        */
+    }
+
 }

@@ -58,7 +58,11 @@ import java.util.jar.Attributes;
 public class MainScreen extends AppCompatActivity {
 
     final private int LOADED = 1;
+    final private int SAVING = 1;
+    final private int DONE_SAVING = 0;
     private int loaded;
+    private int saving;
+
     //firebase items
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
@@ -120,7 +124,6 @@ public class MainScreen extends AppCompatActivity {
 
         TextView achievementText = (TextView) findViewById(R.id.achievements);
         String text = "";
-
 
         writeDataToScreen();
     }
@@ -185,7 +188,6 @@ public class MainScreen extends AppCompatActivity {
 
     public List<MessageData> parseCursorArray(Cursor cursor)
     {
-
         long now = Calendar.getInstance().getTimeInMillis();
         Log.d("message data", "last data scrape: " + lastDataScrape + " Now: " + now);
         if(null == cursor || 0 == cursor.getCount())
@@ -308,6 +310,7 @@ public class MainScreen extends AppCompatActivity {
 
     public void saveInfo()
     {
+        saving = SAVING;
         mDatabaseContacts.setValue(mContacts);
         // Read from the database
         mDatabaseContacts.addValueEventListener(new ValueEventListener() {
@@ -316,8 +319,11 @@ public class MainScreen extends AppCompatActivity {
                 // This method is called once with the initial value and again
                 // whenever data at this location is updated.
                 for (DataSnapshot snap : dataSnapshot.getChildren()){
-                    mContacts.add(snap.getValue(ContactData.class));
-                    //Log.d("write contacts", "Value is: " + mContacts.get(mContacts.size()-1));
+                    //mContacts.add(snap.getValue(ContactData.class));
+                    Log.d("write contacts", "Value is: " + mContacts.get(mContacts.size()-1));
+                }
+                if (saving == SAVING){
+                    saving = DONE_SAVING;
                 }
             }
             @Override
@@ -354,20 +360,22 @@ public class MainScreen extends AppCompatActivity {
         mDatabaseContacts.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                // This method is called once with the initial value and again
-                // whenever data at this location is updated.
-                for (DataSnapshot snap : dataSnapshot.getChildren()){
-                    mContacts.add(snap.getValue(ContactData.class));
-                    //Log.d("read contacts", "contact: " + mContacts.get(0));
+                if (saving == DONE_SAVING) {
+                    // This method is called once with the initial value and again
+                    // whenever data at this location is updated.
+                    mContacts = new ArrayList<ContactData>();
+                    for (DataSnapshot snap : dataSnapshot.getChildren()) {
+                        mContacts.add(snap.getValue(ContactData.class));
+                        //Log.d("read contacts", "contact: " + mContacts.get(0));
+                    }
+                    Log.d("sign in", "outside the read contacts function");
+                    //putting the data onto the screen
+                    if (loaded == LOADED) {
+                        getNewInfo();
+                        writeDataToScreen();
+                    } else
+                        loaded = LOADED;
                 }
-                Log.d("sign in", "outside the read contacts function");
-                //putting the data onto the screen
-                if(loaded == LOADED) {
-                    getNewInfo();
-                    writeDataToScreen();
-                }
-                else
-                    loaded = LOADED;
             }
             @Override
             public void onCancelled(DatabaseError error) {
@@ -450,12 +458,11 @@ public class MainScreen extends AppCompatActivity {
             {
                 //checking if the phone number already is in a contactData obj
                 //this will be fixed later when we just get data from contacts
-                boolean newNum = true;
                 for (ContactData contact : mContacts)
                 {
                     if(contact.phoneNum.get(0).compareTo(formatPhoneNum(message.phoneNum)) == 0) {
-                        newNum = false;
                         contact.addMessage(message);
+                        Log.d("adding messages", "added a new message");
                     }
                 }
             }
@@ -469,7 +476,7 @@ public class MainScreen extends AppCompatActivity {
                 int idx = 0;
                 for (int i = 0; i < contactOrigLen; i++)
                 {
-                    if(mContacts.get(i).lastMessaged == 0) {
+                    if(mContacts.get(i).numMessages() < 100) {
                         indxToRem[idx++] = i;
                     }
                 }
@@ -513,29 +520,35 @@ public class MainScreen extends AppCompatActivity {
             for (ContactData contact : mContacts) {
 
                 //make a button that will let you set the time for them
-                Button btn= new Button(this);
-                btn.setText(contact.toString());
+                FragmentManager fragmentManager = getFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                Fragment c = new ContactButtonFragment();
+                final ContactButton button = (ContactButton)c;
+                fragmentTransaction.add(R.id.scrolllinearlayout, c, "HELLO");
+                fragmentTransaction.commitNow();
+                button.resetButton(contact);
+                Button btn = button.getButton();
                 int num = Integer.parseInt(contact.phoneNum.get(0).substring(1));
-                btn.setId(num);
+                //btn.setId(num);
                 //on click, we want it to take us to the input time screen
                 btn.setOnClickListener(new View.OnClickListener()
                 {
                     public void onClick(View view)
                     {
-                        //your write code
+                        //new screen's info
                         setContentView(R.layout.get_contact_frequency_screen);
                         final Spinner staticSpinner = (Spinner) findViewById(R.id.time_option_spinner);
                         userNum = (EditText) findViewById(R.id.user_num_input);
                         userNum.setTransformationMethod(null);
                         GetUserInput.setInputScreen(MainScreen.this, staticSpinner);
-                        contactButtonId = view.getId();
+                        final ContactData buttonContact = button.getButtonContact();
                         submitInputButton = findViewById(R.id.ok_button);
                         submitInputButton.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
                                 int num = Integer.parseInt(userNum.getText().toString());
                                 for (ContactData contact : mContacts){
-                                    if (Integer.parseInt(contact.phoneNum.get(0).substring(1)) == contactButtonId) {
+                                    if (contact.compareTo(buttonContact) == 0) {
                                         int multiplier = 0;
                                         switch (staticSpinner.getSelectedItem().toString())
                                         {
@@ -557,22 +570,13 @@ public class MainScreen extends AppCompatActivity {
                                                 break;
                                         }
                                         contact.setContactFrequency(num*multiplier);
-                                        setMainScreen();
                                     }
                                 }
+                                setMainScreen();
                             }
                         });
                     }
                 });
-                lView.addView(btn);
-                //should be adding a fragment every time a button is added
-                FragmentManager fragmentManager = getFragmentManager();
-                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                Fragment c = new ContactButtonFragment();
-                ContactButton buttonText = (ContactButton)c;
-                fragmentTransaction.add(R.id.scrolllinearlayout, c, "HELLO");
-                fragmentTransaction.commitNow();
-                buttonText.resetButton(contact);
             }
         }
 
@@ -582,37 +586,29 @@ public class MainScreen extends AppCompatActivity {
     //sorts the contacts from most recently messaged to least recently
     private void sortContacts()
     {
-        Collections.sort(mContacts, new Comparator<ContactData>() {
-            @Override
-            public int compare(ContactData c1, ContactData c2)
-            {
-                boolean deadline1 = c1.deadlineHere;
-                boolean deadline2 = c2.deadlineHere;
-                if (deadline1 && !deadline2)
-                {
-                    return -1;
-                }
-                else if (!deadline1 && deadline2)
-                {
-                    return 1;
-                }
-                else if (deadline1 && deadline2)
-                {
-                    if (c1.lastMessaged > c2.lastMessaged)
+        if(mContacts != null) {
+            Collections.sort(mContacts, new Comparator<ContactData>() {
+                @Override
+                public int compare(ContactData c1, ContactData c2) {
+                    boolean deadline1 = c1.deadlineHere;
+                    boolean deadline2 = c2.deadlineHere;
+                    if (deadline1 && !deadline2) {
+                        return -1;
+                    } else if (!deadline1 && deadline2) {
                         return 1;
-                    else return 0;
+                    } else {
+                        if (c1.lastMessaged > c2.lastMessaged)
+                            return 1;
+                        else return 0;
+                    }
                 }
-                else
-                {
-                    if (c1.lastMessaged < c2.lastMessaged)
-                        return 1;
-                    else return 0;
-                }
-            }
-        });
+            });
+        }
     }
 
     public interface ContactButton{
         public abstract void resetButton(ContactData c);
+        public abstract Button getButton();
+        public abstract ContactData getButtonContact();
     }
 }
