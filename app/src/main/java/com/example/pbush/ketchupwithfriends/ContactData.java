@@ -61,8 +61,10 @@ public class ContactData implements Comparable<ContactData> {
         messages.add(m);
         //checking if the last messaged time needs updated
         //need to expand this to also update the next message deadline too
-        if (lastMessaged < m.timestamp)
+        if (lastMessaged < m.timestamp) {
             lastMessaged = m.timestamp;
+            setContactFrequency(daysPerDeadline);
+        }
         return;
     }
 
