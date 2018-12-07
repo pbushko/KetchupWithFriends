@@ -2,6 +2,9 @@ package com.example.pbush.ketchupwithfriends;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -354,7 +357,7 @@ public class MainScreen extends AppCompatActivity {
                 // This method is called once with the initial value and again
                 // whenever data at this location is updated.
                 for (DataSnapshot snap : dataSnapshot.getChildren()){
-                    mContacts.add(snap.getValue(ContactData.class));
+                    //mContacts.add(snap.getValue(ContactData.class));
                     //Log.d("read contacts", "contact: " + mContacts.get(0));
                 }
                 Log.d("sign in", "outside the read contacts function");
@@ -377,7 +380,7 @@ public class MainScreen extends AppCompatActivity {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot snap : dataSnapshot.getChildren()){
-                    lastDataScrape = snap.getValue(Long.class);
+                    //lastDataScrape = snap.getValue(Long.class);
                     Log.d("sign in", "last data scrape time! it was: " + lastDataScrape);
                 }
                 Log.d("sign in", "outside the scrape function");
@@ -428,15 +431,18 @@ public class MainScreen extends AppCompatActivity {
             List<ContactData> c = getContacts();
             int sze = mContacts.size();
             //only add new contacts if they are not already in our contact list
-            for (ContactData c1 : c)
-            {
-                for (int i = 0; i < sze; i++)
-                {
-                    if (c1.compareTo(mContacts.get(i)) != 0)
-                    {
-                        mContacts.add(c1);
+            if (sze != 0) {
+                for (ContactData c1 : c) {
+                    for (int i = 0; i < sze; i++) {
+                        if (c1.compareTo(mContacts.get(i)) != 0) {
+                            mContacts.add(c1);
+                            i = sze;
+                        }
                     }
                 }
+            }
+            else {
+                mContacts = c;
             }
 
             //sorting the messages by number and showing them
@@ -455,30 +461,38 @@ public class MainScreen extends AppCompatActivity {
             }
             //removing contacts to print if they have never been messaged
             int contactOrigLen = mContacts.size();
-            int[] indxToRem = new int[contactOrigLen];
-            //changing the index so that if 0 needs to be removed, it can be
-            indxToRem[0] = -1;
-            int idx = 0;
-            for (int i = 0; i < contactOrigLen; i++)
-            {
-                if(mContacts.get(i).lastMessaged == 0) {
-                    indxToRem[idx++] = i;
+            int[] indxToRem;
+            if (contactOrigLen > 0) {
+                indxToRem = new int[contactOrigLen];
+                //changing the index so that if 0 needs to be removed, it can be
+                indxToRem[0] = -1;
+                int idx = 0;
+                for (int i = 0; i < contactOrigLen; i++)
+                {
+                    if(mContacts.get(i).lastMessaged == 0) {
+                        indxToRem[idx++] = i;
+                    }
+                }
+                idx--;
+                //if there are any contacts to change at all
+                if (idx >= 0) {
+                    for (int i = contactOrigLen - 1; i > 0; i--) {
+                        if (idx < 0) {
+                            i = 0;
+                        }
+                        else if (indxToRem[idx] == i) {
+                            mContacts.remove(i);
+                            idx--;
+                        }
+                    }
                 }
             }
+            else {
+                mContacts = c;
+            }
+
             Log.d("rem contacts", "original size: " + contactOrigLen);
-            idx--;
-            //if there are any contacts to change at all
-            if (idx >= 0) {
-                for (int i = contactOrigLen - 1; i > 0; i--) {
-                    if (idx < 0) {
-                        i = 0;
-                    }
-                    else if (indxToRem[idx] == i) {
-                        mContacts.remove(i);
-                        idx--;
-                    }
-                }
-            }
+
             Log.d("rem contacts", "new size: " + mContacts.size());
             //just need this to get the set dates since that's where their
             //contact deadlines get set rn
@@ -551,6 +565,14 @@ public class MainScreen extends AppCompatActivity {
                     }
                 });
                 lView.addView(btn);
+                //should be adding a fragment every time a button is added
+                FragmentManager fragmentManager = getFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                Fragment c = new ContactButtonFragment();
+                ContactButton buttonText = (ContactButton)c;
+                fragmentTransaction.add(R.id.scrolllinearlayout, c, "HELLO");
+                fragmentTransaction.commitNow();
+                buttonText.resetButton(contact);
             }
         }
 
@@ -588,5 +610,9 @@ public class MainScreen extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    public interface ContactButton{
+        public abstract void resetButton(ContactData c);
     }
 }
