@@ -526,9 +526,10 @@ public class MainScreen extends AppCompatActivity {
                 final ContactButton button = (ContactButton)c;
                 fragmentTransaction.add(R.id.scrolllinearlayout, c, "HELLO");
                 fragmentTransaction.commitNow();
+                //setting the info in the button
                 button.resetButton(contact);
+                //getting the actual button of the fragment
                 Button btn = button.getButton();
-                int num = Integer.parseInt(contact.phoneNum.get(0).substring(1));
                 //btn.setId(num);
                 //on click, we want it to take us to the input time screen
                 btn.setOnClickListener(new View.OnClickListener()
@@ -610,5 +611,9 @@ public class MainScreen extends AppCompatActivity {
         public abstract void resetButton(ContactData c);
         public abstract Button getButton();
         public abstract ContactData getButtonContact();
+    }
+
+    public interface GetUserInput{
+        public abstract long getNewContactFreq();
     }
 }

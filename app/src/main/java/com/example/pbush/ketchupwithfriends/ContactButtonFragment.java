@@ -61,7 +61,7 @@ public class ContactButtonFragment extends Fragment implements MainScreen.Contac
                     min = TimeUnit.MILLISECONDS.toMinutes(left) / days / hours % 60;
                 }
                 else {
-                    min = TimeUnit.MILLISECONDS.toMinutes(left)% 60;
+                    min = TimeUnit.MILLISECONDS.toMinutes(left) / days % 60;
                 }
             }
             else

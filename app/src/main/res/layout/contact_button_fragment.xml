@@ -9,7 +9,7 @@
 
     <Button
         android:id="@+id/contact_button"
-        android:layout_width="380dp"
+        android:layout_width="match_parent"
         android:layout_height="52dp" />
 
     <ProgressBar
@@ -22,9 +22,9 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:translationZ="2dp"
-        app:layout_constraintBottom_toBottomOf="@+id/button2"
-        app:layout_constraintEnd_toEndOf="@+id/button2"
-        app:layout_constraintStart_toStartOf="@+id/button2"
+        app:layout_constraintBottom_toBottomOf="@+id/contact_button"
+        app:layout_constraintEnd_toEndOf="@+id/contact_button"
+        app:layout_constraintStart_toStartOf="@+id/contact_button"
         app:layout_constraintTop_toTopOf="@+id/timeLeft" />
 
     <TextView
@@ -35,7 +35,7 @@
         android:layout_marginTop="8dp"
         android:text="Time Left:"
         android:translationZ="2dp"
-        app:layout_constraintEnd_toEndOf="@+id/button2"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -48,7 +48,7 @@
         android:layout_marginTop="16dp"
         android:text="Name:"
         android:translationZ="2dp"
-        app:layout_constraintEnd_toEndOf="@+id/button2"
+        app:layout_constraintEnd_toEndOf="@+id/contact_button"
         app:layout_constraintHorizontal_bias="0.024"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
