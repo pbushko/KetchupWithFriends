@@ -536,7 +536,25 @@ public class MainScreen extends AppCompatActivity {
                 {
                     public void onClick(View view)
                     {
+                        //the user input button
+                        FragmentManager fragmentManager = getFragmentManager();
+                        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                        Fragment y = new GetUserInput();
+                        final GetUserInput frag = (GetUserInput)y;
+                        fragmentTransaction.add(R.id.scrolllinearlayout, y, "HELLO");
+                        fragmentTransaction.commitNow();
+                        //setting the info in the button
+                        Button submit = frag.getSubmitButton();
+                        submit.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                int toAdd = frag.getNewContactFreq();
+                                button.getButtonContact().setContactFrequency(toAdd);
+                                setMainScreen();
+                            }
+                        });
                         //new screen's info
+                        /*
                         setContentView(R.layout.get_contact_frequency_screen);
                         final Spinner staticSpinner = (Spinner) findViewById(R.id.time_option_spinner);
                         userNum = (EditText) findViewById(R.id.user_num_input);
@@ -547,35 +565,10 @@ public class MainScreen extends AppCompatActivity {
                         submitInputButton.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                int num = Integer.parseInt(userNum.getText().toString());
-                                for (ContactData contact : mContacts){
-                                    if (contact.compareTo(buttonContact) == 0) {
-                                        int multiplier = 0;
-                                        switch (staticSpinner.getSelectedItem().toString())
-                                        {
-                                            case("Hour"):
-                                                multiplier = 1;
-                                                break;
-                                            case("Day"):
-                                                multiplier = 24;
-                                                break;
-                                            case("Week"):
-                                                multiplier = 7*24;
-                                                break;
-                                            // NOT IMPLEMENTED RIGHT NOW
-                                            case("Month"):
-                                                multiplier = 1;
-                                                break;
-                                            default:
-                                                multiplier = 1;
-                                                break;
-                                        }
-                                        contact.setContactFrequency(num*multiplier);
-                                    }
-                                }
+
                                 setMainScreen();
                             }
-                        });
+                        });*/
                     }
                 });
             }
@@ -613,7 +606,9 @@ public class MainScreen extends AppCompatActivity {
         public abstract ContactData getButtonContact();
     }
 
-    public interface GetUserInput{
-        public abstract long getNewContactFreq();
+    public interface GetInput{
+        public abstract int getNewContactFreq();
+        public abstract Button getSubmitButton();
+        public abstract Button getCancelButton();
     }
 }

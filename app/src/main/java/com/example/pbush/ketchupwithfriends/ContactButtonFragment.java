@@ -90,54 +90,6 @@ public class ContactButtonFragment extends Fragment implements MainScreen.Contac
     public Button getButton()
     {
         return contactButton;
-        /*
-        contactButton.setOnClickListener(new View.OnClickListener()
-        {
-            public void onClick(View view)
-            {
-                //your write code
-                setContentView(R.layout.get_contact_frequency_screen);
-                final Spinner staticSpinner = (Spinner) findViewById(R.id.time_option_spinner);
-                EditText userNum = (EditText) findViewById(R.id.user_num_input);
-                userNum.setTransformationMethod(null);
-                GetUserInput.setInputScreen(this, staticSpinner);
-                contactButtonId = view.getId();
-                submitInputButton = findViewById(R.id.ok_button);
-                submitInputButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        int num = Integer.parseInt(userNum.getText().toString());
-                        for (ContactData contact : mContacts){
-                            if (Integer.parseInt(contact.phoneNum.get(0).substring(1)) == contactButtonId) {
-                                int multiplier = 0;
-                                switch (staticSpinner.getSelectedItem().toString())
-                                {
-                                    case("Hour"):
-                                        multiplier = 1;
-                                        break;
-                                    case("Day"):
-                                        multiplier = 24;
-                                        break;
-                                    case("Week"):
-                                        multiplier = 7*24;
-                                        break;
-                                    // NOT IMPLEMENTED RIGHT NOW
-                                    case("Month"):
-                                        multiplier = 1;
-                                        break;
-                                    default:
-                                        multiplier = 1;
-                                        break;
-                                }
-                                contact.setContactFrequency(num*multiplier);
-                                setMainScreen();
-                            }
-                        }
-                    }
-                });
-            }
-        });
-        */
     }
 
 }
