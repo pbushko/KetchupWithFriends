@@ -73,17 +73,9 @@ public class MainScreen extends AppCompatActivity {
     private FirebaseDatabase mDatabase;
     private DatabaseReference mDatabaseContacts;
     private DatabaseReference mDatabaseLastScrape;
-    private GoogleSignInClient mGoogleSignInClient;
     private Button signInButton;
     private Button saveButton;
-    private Button getInputButton;
-    private Button submitInputButton;
-
     private long lastDataScrape;
-
-    private EditText userNum;
-
-    private int contactButtonId;
 
     //the messages and contacts
     private List<MessageData> mMessages;
