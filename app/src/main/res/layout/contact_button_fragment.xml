@@ -1,55 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content">
 
 
-    <Button
-        android:id="@+id/contact_button"
+    <LinearLayout
+        android:id="@+id/contact_button_linear_layout"
         android:layout_width="match_parent"
-        android:layout_height="52dp" />
-
-    <ProgressBar
-        android:id="@+id/progressBarTimeLeft"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="232dp"
-        android:layout_height="26dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:translationZ="2dp"
-        app:layout_constraintBottom_toBottomOf="@+id/contact_button"
-        app:layout_constraintEnd_toEndOf="@+id/contact_button"
-        app:layout_constraintStart_toStartOf="@+id/contact_button"
-        app:layout_constraintTop_toTopOf="@+id/timeLeft" />
-
-    <TextView
-        android:id="@+id/timeLeft"
-        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginTop="8dp"
-        android:text="Time Left:"
-        android:translationZ="2dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="16dp"
-        android:text="Name:"
-        android:translationZ="2dp"
-        app:layout_constraintEnd_toEndOf="@+id/contact_button"
-        app:layout_constraintHorizontal_bias="0.024"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        <android.support.constraint.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="16dp"
+                android:text="Name:"
+                android:translationZ="10dp"
+                app:layout_constraintEnd_toEndOf="@+id/contact_button"
+                app:layout_constraintHorizontal_bias="0.024"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/timeLeft"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_marginTop="8dp"
+                android:text="Time Left:"
+                android:translationZ="10dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <Button
+                android:id="@+id/msgButton"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/mail_icon"
+                android:translationZ="10dp"
+                app:layout_constraintEnd_toEndOf="@+id/contact_button"
+                app:layout_constraintHorizontal_bias="1.0"
+                app:layout_constraintStart_toStartOf="@+id/contact_button"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <Button
+                android:id="@+id/contact_button"
+                android:layout_width="match_parent"
+                android:layout_height="52dp" />
+
+            <ProgressBar
+                android:id="@+id/progressBarTimeLeft"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="232dp"
+                android:layout_height="26dp"
+                android:layout_marginBottom="8dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                android:translationZ="10dp"
+                app:layout_constraintBottom_toBottomOf="@+id/contact_button"
+                app:layout_constraintEnd_toEndOf="@+id/contact_button"
+                app:layout_constraintStart_toStartOf="@+id/contact_button"
+                app:layout_constraintTop_toTopOf="@+id/timeLeft" />
+        </android.support.constraint.ConstraintLayout>
+    </LinearLayout>
+
 </android.support.constraint.ConstraintLayout>

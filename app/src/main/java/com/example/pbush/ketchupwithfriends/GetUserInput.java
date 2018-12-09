@@ -21,7 +21,7 @@ import android.widget.TextView;
  */
 
 public class GetUserInput extends Fragment implements MainScreen.GetInput{
-    
+
     private Button submitButton;
     private Button cancelButton;
     private Spinner spinner;

@@ -55,7 +55,11 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.jar.Attributes;
 
+import retrofit2.http.GET;
+
 public class MainScreen extends AppCompatActivity {
+
+    public static int forIds = 0;
 
     final private int LOADED = 1;
     final private int SAVING = 1;
@@ -76,7 +80,6 @@ public class MainScreen extends AppCompatActivity {
     private Button submitInputButton;
 
     private long lastDataScrape;
-
 
     private EditText userNum;
 
@@ -113,7 +116,6 @@ public class MainScreen extends AppCompatActivity {
         });
         signInButton.setVisibility(View.INVISIBLE);
 
-        //setting the save button to save info when pressed
         saveButton = findViewById(R.id.saveButton);
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -517,6 +519,7 @@ public class MainScreen extends AppCompatActivity {
         LinearLayout lView = (LinearLayout)findViewById(R.id.scrolllinearlayout);
         //showing the contact data
         if (mContacts != null) {
+            int buttonIndex = 0;
             for (ContactData contact : mContacts) {
 
                 //make a button that will let you set the time for them
@@ -527,7 +530,7 @@ public class MainScreen extends AppCompatActivity {
                 fragmentTransaction.add(R.id.scrolllinearlayout, c, "HELLO");
                 fragmentTransaction.commitNow();
                 //setting the info in the button
-                button.resetButton(contact);
+                button.resetButton(contact, buttonIndex);
                 //getting the actual button of the fragment
                 Button btn = button.getButton();
                 //btn.setId(num);
@@ -541,7 +544,7 @@ public class MainScreen extends AppCompatActivity {
                         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
                         Fragment y = new GetUserInput();
                         final GetUserInput frag = (GetUserInput)y;
-                        fragmentTransaction.add(R.id.scrolllinearlayout, y, "HELLO");
+                        fragmentTransaction.add(button.getLayout(), y, "HELLO");
                         fragmentTransaction.commitNow();
                         //setting the info in the button
                         Button submit = frag.getSubmitButton();
@@ -553,22 +556,6 @@ public class MainScreen extends AppCompatActivity {
                                 setMainScreen();
                             }
                         });
-                        //new screen's info
-                        /*
-                        setContentView(R.layout.get_contact_frequency_screen);
-                        final Spinner staticSpinner = (Spinner) findViewById(R.id.time_option_spinner);
-                        userNum = (EditText) findViewById(R.id.user_num_input);
-                        userNum.setTransformationMethod(null);
-                        GetUserInput.setInputScreen(MainScreen.this, staticSpinner);
-                        final ContactData buttonContact = button.getButtonContact();
-                        submitInputButton = findViewById(R.id.ok_button);
-                        submitInputButton.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-
-                                setMainScreen();
-                            }
-                        });*/
                     }
                 });
             }
@@ -601,9 +588,12 @@ public class MainScreen extends AppCompatActivity {
     }
 
     public interface ContactButton{
-        public abstract void resetButton(ContactData c);
+        public abstract void resetButton(ContactData c, int idx);
         public abstract Button getButton();
         public abstract ContactData getButtonContact();
+        public abstract int getIndex();
+        public abstract int getLayout();
+        public abstract Button getMsgButton();
     }
 
     public interface GetInput{

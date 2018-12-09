@@ -1,6 +1,7 @@
 package com.example.pbush.ketchupwithfriends;
 
 import android.app.Fragment;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -8,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -24,25 +26,42 @@ import java.util.concurrent.TimeUnit;
 public class ContactButtonFragment extends Fragment implements MainScreen.ContactButton{
 
     private ContactData contact;
+    private int linearLayout;
     private Button contactButton;
+    private Button msgButton;
     private TextView nameText;
     private TextView timeLeftText;
     private ProgressBar progress;
+    private int idx;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState) {
         /** Inflating the layout for this fragment **/
         View v = inflater.inflate(R.layout.contact_button_fragment, container, false);
         nameText = (TextView) v.findViewById(R.id.name);
+        LinearLayout l = v.findViewById(R.id.contact_button_linear_layout);
+        l.setId(MainScreen.forIds);
+        linearLayout = MainScreen.forIds++;
         timeLeftText = (TextView) v.findViewById(R.id.timeLeft);
         progress = (ProgressBar) v.findViewById(R.id.progressBarTimeLeft);
         contactButton = (Button) v.findViewById(R.id.contact_button);
+        msgButton = (Button)v.findViewById(R.id.msgButton);
+        msgButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent sendIntent = new Intent(Intent.ACTION_VIEW);
+                sendIntent.setType("vnd.android-dir/mms-sms");
+                sendIntent.putExtra("address", contact.phoneNum.get(0));
+                startActivity(sendIntent);
+            }
+        });
         return v;
     }
 
     @Override
-    public void resetButton(ContactData c)
+    public void resetButton(ContactData c, int index)
     {
+        idx = index;
         contact = c;
         nameText.setText(c.name);
         long left = c.nextMessageDeadline - Calendar.getInstance().getTimeInMillis();
@@ -92,4 +111,17 @@ public class ContactButtonFragment extends Fragment implements MainScreen.Contac
         return contactButton;
     }
 
+    @Override
+    public int getIndex() {
+        return idx;
+    }
+
+    public int getLayout()
+    {
+        return linearLayout;
+    }
+
+    public Button getMsgButton() {
+        return msgButton;
+    }
 }
