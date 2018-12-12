@@ -24,6 +24,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TabHost;
@@ -76,6 +77,7 @@ public class MainScreen extends AppCompatActivity {
     private Button signInButton;
     private Button saveButton;
     private long lastDataScrape;
+    private ImageView loadingScreen;
 
     //the messages and contacts
     private List<MessageData> mMessages;
@@ -84,7 +86,7 @@ public class MainScreen extends AppCompatActivity {
     private void setMainScreen()
     {
         setContentView(R.layout.activity_main_screen);
-
+        loadingScreen = findViewById(R.id.loadingScreen);
         TabHost host = (TabHost)findViewById(R.id.tabHost);
         host.setup();
         //Tab 1
@@ -116,7 +118,7 @@ public class MainScreen extends AppCompatActivity {
             }
         });
 
-        TextView achievementText = (TextView) findViewById(R.id.achievements);
+        //TextView achievementText = (TextView) findViewById(R.id.achievements);
         String text = "";
 
         writeDataToScreen();
@@ -170,12 +172,12 @@ public class MainScreen extends AppCompatActivity {
 
     public List<MessageData> getSentMessages()
     {
-            Uri uriSms = Uri.parse("content://sms/sent");
-            Cursor cursor = this.getContentResolver().query(uriSms, null,null,null,null);
-            List<MessageData> outboxSms = parseCursorArray(cursor);
-            if(!cursor.isClosed())
-            {
-                cursor.close();
+        Uri uriSms = Uri.parse("content://sms/sent");
+        Cursor cursor = this.getContentResolver().query(uriSms, null,null,null,null);
+        List<MessageData> outboxSms = parseCursorArray(cursor);
+        if(!cursor.isClosed())
+        {
+            cursor.close();
         }
         return outboxSms;
     }
@@ -262,7 +264,7 @@ public class MainScreen extends AppCompatActivity {
     private String formatPhoneNumber(String number)
     {
         return number.replace("-", "").replace("+", "")
-            .replace(" ", "").replace(")", "")
+                .replace(" ", "").replace(")", "")
                 .replace("(", "");
     }
 
@@ -284,9 +286,11 @@ public class MainScreen extends AppCompatActivity {
         }
         else{
             Log.d("sign in", "signed in!");
+            loadingScreen.setVisibility(View.VISIBLE);
             signInButton.setVisibility(View.INVISIBLE);
             //getting the saved and new info
             mContacts = new ArrayList<ContactData>();
+
             getSavedInfo();
             //lastDataScrape = 0;
         }
@@ -552,7 +556,7 @@ public class MainScreen extends AppCompatActivity {
                 });
             }
         }
-
+        loadingScreen.setVisibility(View.INVISIBLE);
         Log.d("write data to screen", "done writing data");
     }
 
