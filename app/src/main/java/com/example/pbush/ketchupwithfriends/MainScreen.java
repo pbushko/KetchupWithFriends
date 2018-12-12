@@ -128,7 +128,7 @@ public class MainScreen extends AppCompatActivity {
             }
         });
 
-        TextView achievementText = (TextView) findViewById(R.id.achievements);
+        //TextView achievementText = (TextView) findViewById(R.id.achievements);
         String text = "";
 
         writeDataToScreen();
