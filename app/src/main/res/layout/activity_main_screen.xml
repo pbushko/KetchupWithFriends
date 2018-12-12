@@ -91,94 +91,87 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent">
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:orientation="vertical"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent">
-
-                        <TextView
-                            android:id="@+id/textView2"
+                        <LinearLayout
+                            android:id="@+id/newLinLayout"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginEnd="8dp"
-                            android:layout_marginTop="16dp"
-                            android:text="Achievements"
-                            android:textAppearance="@style/TextAppearance.AppCompat.Display1"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintStart_toStartOf="@+id/imageView"
-                            app:layout_constraintTop_toTopOf="parent" />
+                            android:orientation="vertical" >
 
-                        <android.support.constraint.ConstraintLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent">
+                            <TextView
+                                android:id="@+id/textView2"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="16dp"
+                                android:text="Rough Approx of Achievements"
+                                android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+                                app:layout_constraintStart_toStartOf="@+id/imageView"
+                                app:layout_constraintTop_toTopOf="parent" />
 
                             <ImageView
                                 android:id="@+id/imageView"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="8dp"
+                                android:layout_width="wrap_content"
+                                android:layout_height="507dp"
                                 android:contentDescription="Temp bg of achievements"
                                 app:layout_constraintEnd_toEndOf="parent"
                                 app:layout_constraintTop_toTopOf="parent"
-                                app:srcCompat="@drawable/tomato_yay_small" />
+                                app:srcCompat="@drawable/tomatofield" />
 
-                            <TextView
-                                android:id="@+id/textView4"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Add 10 friends"
-                                app:layout_constraintBottom_toBottomOf="parent"
-                                app:layout_constraintEnd_toEndOf="parent"
-                                app:layout_constraintHorizontal_bias="0.054"
-                                app:layout_constraintStart_toStartOf="@+id/imageView"
-                                app:layout_constraintTop_toTopOf="@+id/imageView"
-                                app:layout_constraintVertical_bias="0.49" />
-
-                            <TextView
-                                android:id="@+id/textView5"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="24dp"
-                                android:layout_marginTop="96dp"
-                                android:text="Share Our App on FB!"
-                                app:layout_constraintBottom_toBottomOf="parent"
-                                app:layout_constraintEnd_toEndOf="parent"
-                                app:layout_constraintHorizontal_bias="1.0"
-                                app:layout_constraintStart_toStartOf="@+id/imageView"
-                                app:layout_constraintTop_toTopOf="@+id/imageView"
-                                app:layout_constraintVertical_bias="0.042" />
 
                             <TextView
                                 android:id="@+id/textView3"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginBottom="8dp"
-                                android:layout_marginEnd="8dp"
-                                android:layout_marginStart="8dp"
-                                android:text="Maintain a 10 Day\nMessage Streak"
-                                app:layout_constraintBottom_toBottomOf="parent"
-                                app:layout_constraintEnd_toEndOf="parent"
-                                app:layout_constraintHorizontal_bias="0.887"
-                                app:layout_constraintStart_toStartOf="@+id/imageView"
-                                app:layout_constraintTop_toTopOf="@+id/imageView"
-                                app:layout_constraintVertical_bias="0.728" />
-                        </android.support.constraint.ConstraintLayout>
+                                android:layout_marginStart="16dp"
+                                android:layout_marginTop="48dp"
+                                android:text="Maintain a 10 Day Message Streak"
+                                android:textColor="@android:color/background_light"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toBottomOf="@+id/textView2" />
 
-                        <ImageView
-                            android:id="@+id/tomato_chan"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center"
-                            android:src="@drawable/tomato_thumbsup_small"
-                            tools:layout_editor_absoluteX="138dp"
-                            tools:layout_editor_absoluteY="190dp" />
+                            <TextView
+                                android:id="@+id/textView4"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="10dp"
+                                android:layout_marginTop="37dp"
+                                android:text="Add 10 friends"
+                                android:textColor="@android:color/background_light"
+                                app:layout_constraintEnd_toEndOf="@+id/textView3"
+                                app:layout_constraintTop_toBottomOf="@+id/textView3" />
 
-                    </LinearLayout>
+                            <TextView
+                                android:id="@+id/textView5"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="23dp"
+                                android:layout_marginTop="38dp"
+                                android:text="Share Our App on FB!"
+                                android:textColor="@android:color/background_light"
+                                app:layout_constraintEnd_toEndOf="@+id/textView4"
+                                app:layout_constraintTop_toBottomOf="@+id/textView4" />
 
+                            <LinearLayout
+                                android:id="@+id/achievement_layout"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:id="@+id/achievements"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/achievements" />
+                            </LinearLayout>
+
+                            <ImageView
+                                android:id="@+id/tomato_chan"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:src="@drawable/tomato_thumbsup_small"
+                                tools:layout_editor_absoluteX="138dp"
+                                tools:layout_editor_absoluteY="190dp" />
+                        </LinearLayout>
 
                     </ScrollView>
                 </LinearLayout>
