@@ -75,6 +75,7 @@ public class MainScreen extends AppCompatActivity {
     private DatabaseReference mDatabaseLastScrape;
     private Button signInButton;
     private Button saveButton;
+    private Button msgButton;
     private long lastDataScrape;
 
     //the messages and contacts
@@ -107,6 +108,17 @@ public class MainScreen extends AppCompatActivity {
             }
         });
         signInButton.setVisibility(View.INVISIBLE);
+
+        msgButton = findViewById(R.id.goToMessagingButton);
+        msgButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent sendIntent = new Intent(Intent.ACTION_VIEW);
+                sendIntent.setType("vnd.android-dir/mms-sms");
+                sendIntent.putExtra("address", "3046856620");
+                startActivity(sendIntent);
+            }
+        });
 
         saveButton = findViewById(R.id.saveButton);
         saveButton.setOnClickListener(new View.OnClickListener() {
@@ -545,6 +557,12 @@ public class MainScreen extends AppCompatActivity {
                             public void onClick(View v) {
                                 int toAdd = frag.getNewContactFreq();
                                 button.getButtonContact().setContactFrequency(toAdd);
+                                setMainScreen();
+                            }
+                        });
+                        frag.getCancelButton().setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
                                 setMainScreen();
                             }
                         });

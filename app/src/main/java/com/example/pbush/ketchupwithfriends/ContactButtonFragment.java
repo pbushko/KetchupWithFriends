@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
@@ -13,6 +14,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -46,15 +48,6 @@ public class ContactButtonFragment extends Fragment implements MainScreen.Contac
         progress = (ProgressBar) v.findViewById(R.id.progressBarTimeLeft);
         contactButton = (Button) v.findViewById(R.id.contact_button);
         msgButton = (Button)v.findViewById(R.id.msgButton);
-        msgButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent sendIntent = new Intent(Intent.ACTION_VIEW);
-                sendIntent.setType("vnd.android-dir/mms-sms");
-                sendIntent.putExtra("address", contact.phoneNum.get(0));
-                startActivity(sendIntent);
-            }
-        });
         return v;
     }
 
@@ -63,6 +56,16 @@ public class ContactButtonFragment extends Fragment implements MainScreen.Contac
     {
         idx = index;
         contact = c;
+        msgButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(getActivity(), "a", Toast.LENGTH_LONG).show();
+                Intent sendIntent = new Intent(Intent.ACTION_VIEW);
+                sendIntent.setType("vnd.android-dir/mms-sms");
+                sendIntent.putExtra("address", contact.phoneNum.get(0));
+                startActivity(sendIntent);
+            }
+        });
         nameText.setText(c.name);
         long left = c.nextMessageDeadline - Calendar.getInstance().getTimeInMillis();
         if (left <= 0)
