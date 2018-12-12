@@ -78,6 +78,8 @@ public class MainScreen extends AppCompatActivity {
     private Button saveButton;
     private long lastDataScrape;
     private ImageView loadingScreen;
+    // Add this to firebase as well
+    private AchievementData achieve;
 
     //the messages and contacts
     private List<MessageData> mMessages;
@@ -209,6 +211,14 @@ public class MainScreen extends AppCompatActivity {
                     messages.add(singleSms);
                     numNewMessages++;
                     //Log.d("newMessageScrape", "Num new messages: " + numNewMessages);
+
+                    // process new message for achievement if this is not first installation
+                    /* uncomment-kasarn
+                    if (lastDataScrape != 0) {
+                        achieve.update(singleSms, mContacts);
+                        achieve.incrMsg();
+                    }
+                    */
                 }
                 else {
                     cursor.moveToLast();
@@ -254,6 +264,9 @@ public class MainScreen extends AppCompatActivity {
             c.name = name;
             c.addPhoneNumber(number);
             contacts.add(c);
+            /* uncomment-kasarn
+            achieve.incrContact();
+            */
         }
 
         cursor.close();
