@@ -1,6 +1,13 @@
 package com.example.pbush.ketchupwithfriends;
 
 import android.util.Log;
+import android.graphics.Bitmap;
+import android.net.Uri;
+import android.content.ContentUris;
+import android.database.Cursor;
+import android.provider.ContactsContract.Contacts;
+import android.content.Context;
+
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -8,6 +15,8 @@ import java.util.List;
 import java.util.Calendar;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.io.ByteArrayInputStream;
+
 
 /**
  * Created by pbush on 10/25/2018.
@@ -26,6 +35,9 @@ public class ContactData implements Comparable<ContactData> {
     public int relationshipPoints; //the "points" assigned to this contact
     public int streak; //the streak of consecutive times the contact has been messaged daily
     public long lastMessaged;
+    /* profile picture */
+    public ByteArrayInputStream pic;
+
 
     public ContactData()
     {
@@ -93,6 +105,29 @@ public class ContactData implements Comparable<ContactData> {
         else
             deadlineHere = false;
         return;
+    }
+    /* provide Context to get thumbnail profile pic and save under pic field */
+    public void updatePicture(Context context)
+    {
+        long number = phoneNum.get(0);
+        Uri contactUri = ContentUris.withAppendedId(Contacts.CONTENT_URI, number);
+        Uri photoUri = Uri.withAppendedPath(contactUri, Contacts.Photo.CONTENT_DIRECTORY);
+        Cursor cursor = context.getContentResolver().query(photoUri,
+                new String[] {Contacts.Photo.PHOTO}, null, null, null);
+        if (cursor == null) {
+            return null;
+        }
+        try {
+            if (cursor.moveToFirst()) {
+                byte[] data = cursor.getBlob(0);
+                if (data != null) {
+                    pic = new ByteArrayInputStream(data);
+                    return null;
+                }
+            }
+        } finally {
+            cursor.close();
+        }
     }
 
     public String toString()
