@@ -5,6 +5,8 @@
 
     <string name="title_activity_settings">SettingsActivity</string>
 
+    <color name="peach_puff">#FFDAB9</color>
+
     <!-- Strings related to Settings -->
 
     <!-- Example General settings -->

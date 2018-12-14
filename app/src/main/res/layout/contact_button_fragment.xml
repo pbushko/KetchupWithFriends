@@ -8,16 +8,13 @@
 
     <Button
         android:id="@+id/msgButton"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="52dp"
-        android:background="@drawable/mail_icon"
+        android:layout_width="123dp"
+        android:layout_height="122dp"
+        android:layout_marginStart="316dp"
+        android:layout_marginTop="28dp"
+        android:background="@drawable/tomato_mail"
         android:translationZ="10dp"
-        app:layout_constraintEnd_toEndOf="@+id/contact_button_linear_layout"
-        app:layout_constraintHorizontal_bias="0.918"
-        app:layout_constraintStart_toStartOf="@+id/contact_button_linear_layout"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <LinearLayout
@@ -37,7 +34,7 @@
                 android:layout_marginEnd="8dp"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="60dp"
-                android:translationZ="10dp"
+                android:translationZ="4dp"
                 app:layout_constraintEnd_toEndOf="@+id/contact_button"
                 app:layout_constraintHorizontal_bias="0.068"
                 app:layout_constraintStart_toStartOf="parent"
@@ -56,7 +53,9 @@
                 app:layout_constraintEnd_toEndOf="@+id/contact_button"
                 app:layout_constraintHorizontal_bias="0.125"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                android:fontFamily="casual"
+                android:textStyle="bold"/>
 
             <TextView
                 android:id="@+id/timeLeft"
@@ -69,7 +68,9 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.483"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                android:fontFamily="casual"
+                android:textStyle="bold"/>
 
             <Button
                 android:id="@+id/contact_button"

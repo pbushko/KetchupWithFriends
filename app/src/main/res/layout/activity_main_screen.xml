@@ -7,6 +7,20 @@
     android:layout_height="match_parent"
     tools:context="com.example.pbush.ketchupwithfriends.MainScreen">
 
+    <Button
+        android:id="@+id/signInButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Button" />
+
+    <ImageView
+        android:id="@+id/peach_puff_background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:translationZ="-50dp"
+        app:srcCompat="@drawable/peach_puff_polka_dot"
+        tools:layout_editor_absoluteY="455dp" />
+
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -17,18 +31,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:srcCompat="@drawable/tomato_yay_small" />
-    </FrameLayout>
 
-    <Button
-        android:id="@+id/signInButton"
-        android:layout_width="179dp"
-        android:layout_height="56dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginTop="8dp"
-        android:text="Sign In"
-        app:layout_constraintBottom_toBottomOf="@+id/tabHost"
-        app:layout_constraintTop_toTopOf="@+id/tabHost"
-        tools:layout_editor_absoluteX="103dp" />
+    </FrameLayout>
 
     <TabHost
         android:id="@+id/tabHost"
@@ -40,7 +44,8 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:background="@color/peach_puff">
 
             <TabWidget
                 android:id="@android:id/tabs"
@@ -66,11 +71,12 @@
                             android:id="@+id/scrolllinearlayout"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="vertical" >
+                            android:orientation="vertical">
 
                         </LinearLayout>
 
                     </ScrollView>
+
                 </LinearLayout>
 
                 <LinearLayout
@@ -93,15 +99,14 @@
                                 android:layout_height="wrap_content"
                                 android:orientation="vertical">
 
-                                <TextView
-                                    android:id="@+id/textView2"
-                                    android:layout_width="match_parent"
+                                <ImageView
+                                    android:id="@+id/imageView4"
+                                    android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:layout_marginTop="16dp"
-                                    android:text="Rough Approx of Achievements"
-                                    android:textAppearance="@style/TextAppearance.AppCompat.Display1"
-                                    app:layout_constraintStart_toStartOf="@+id/imageView"
-                                    app:layout_constraintTop_toTopOf="parent" />
+                                    android:translationZ="-10dp"
+                                    app:srcCompat="@drawable/achievement_header"
+                                    tools:layout_editor_absoluteX="0dp"
+                                    tools:layout_editor_absoluteY="16dp" />
 
                                 <android.support.constraint.ConstraintLayout
                                     android:layout_width="match_parent"
@@ -116,47 +121,90 @@
                                         app:layout_constraintTop_toTopOf="parent"
                                         app:srcCompat="@drawable/achievement_tomato_vine" />
 
+                                    <ImageView
+                                        android:id="@+id/cloud4"
+                                        android:layout_width="251dp"
+                                        android:layout_height="116dp"
+                                        android:layout_marginEnd="204dp"
+                                        android:layout_marginTop="184dp"
+                                        app:layout_constraintEnd_toEndOf="parent"
+                                        app:layout_constraintTop_toTopOf="parent"
+                                        app:srcCompat="@drawable/achievement_cloud_left" />
+
+                                    <ImageView
+                                        android:id="@+id/cloud3"
+                                        android:layout_width="251dp"
+                                        android:layout_height="116dp"
+                                        android:layout_marginEnd="192dp"
+                                        android:layout_marginTop="24dp"
+                                        app:layout_constraintEnd_toEndOf="parent"
+                                        app:layout_constraintTop_toTopOf="parent"
+                                        app:srcCompat="@drawable/achievement_cloud_left" />
+
+                                    <ImageView
+                                        android:id="@+id/cloud"
+                                        android:layout_width="251dp"
+                                        android:layout_height="116dp"
+                                        android:layout_marginStart="172dp"
+                                        android:layout_marginTop="52dp"
+                                        app:layout_constraintStart_toStartOf="parent"
+                                        app:layout_constraintTop_toTopOf="parent"
+                                        app:srcCompat="@drawable/achievement_cloud_right" />
+
+                                    <ImageView
+                                        android:id="@+id/cloud2"
+                                        android:layout_width="251dp"
+                                        android:layout_height="116dp"
+                                        android:layout_marginStart="180dp"
+                                        android:layout_marginTop="168dp"
+                                        app:layout_constraintStart_toStartOf="parent"
+                                        app:layout_constraintTop_toTopOf="parent"
+                                        app:srcCompat="@drawable/achievement_cloud_right" />
+
                                     <TextView
                                         android:id="@+id/textView4"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
                                         android:layout_marginEnd="8dp"
                                         android:layout_marginStart="8dp"
-                                        android:layout_marginTop="216dp"
+                                        android:layout_marginTop="236dp"
                                         android:text="Add 10 friends"
                                         android:textColor="@android:color/background_dark"
                                         app:layout_constraintEnd_toEndOf="parent"
                                         app:layout_constraintHorizontal_bias="0.894"
                                         app:layout_constraintStart_toStartOf="parent"
-                                        app:layout_constraintTop_toTopOf="@+id/imageView" />
+                                        app:layout_constraintTop_toTopOf="@+id/imageView"
+                                        android:fontFamily="casual"
+                                        android:textStyle="bold"/>
 
                                     <TextView
                                         android:id="@+id/textView5"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:layout_marginBottom="104dp"
-                                        android:layout_marginEnd="8dp"
-                                        android:layout_marginStart="8dp"
-                                        android:text="Share Our App on FB!"
+                                        android:layout_marginEnd="300dp"
+                                        android:layout_marginTop="76dp"
+                                        android:text="Share Our\nApp on FB!"
                                         android:textColor="@android:color/background_dark"
-                                        app:layout_constraintBottom_toBottomOf="parent"
                                         app:layout_constraintEnd_toEndOf="parent"
-                                        app:layout_constraintHorizontal_bias="0.14"
-                                        app:layout_constraintStart_toStartOf="parent" />
+                                        app:layout_constraintTop_toTopOf="parent"
+                                        android:fontFamily="casual"
+                                        android:textStyle="bold"/>
 
                                     <TextView
                                         android:id="@+id/textView3"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:layout_marginBottom="188dp"
+                                        android:layout_marginBottom="28dp"
                                         android:layout_marginEnd="8dp"
                                         android:layout_marginStart="8dp"
-                                        android:text="Maintain a 10 Day Message Streak"
+                                        android:text="Maintain a\n10 Day Streak"
                                         android:textColor="@android:color/background_dark"
                                         app:layout_constraintBottom_toBottomOf="@+id/imageView"
                                         app:layout_constraintEnd_toEndOf="parent"
-                                        app:layout_constraintHorizontal_bias="1.0"
-                                        app:layout_constraintStart_toStartOf="parent" />
+                                        app:layout_constraintHorizontal_bias="0.0"
+                                        app:layout_constraintStart_toStartOf="parent"
+                                        android:fontFamily="casual"
+                                        android:textStyle="bold"/>
                                 </android.support.constraint.ConstraintLayout>
 
                                 <android.support.constraint.ConstraintLayout
