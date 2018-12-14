@@ -10,10 +10,15 @@
         android:id="@+id/msgButton"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:layout_marginEnd="8dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="52dp"
         android:background="@drawable/mail_icon"
         android:translationZ="10dp"
-        app:layout_constraintEnd_toEndOf="@+id/contact_button_linear_layout" />
+        app:layout_constraintEnd_toEndOf="@+id/contact_button_linear_layout"
+        app:layout_constraintHorizontal_bias="0.918"
+        app:layout_constraintStart_toStartOf="@+id/contact_button_linear_layout"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <LinearLayout
         android:id="@+id/contact_button_linear_layout"
@@ -23,7 +28,21 @@
 
         <android.support.constraint.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/contact_image"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="60dp"
+                android:translationZ="10dp"
+                app:layout_constraintEnd_toEndOf="@+id/contact_button"
+                app:layout_constraintHorizontal_bias="0.068"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/contact_button"
+                app:srcCompat="@mipmap/ic_default_contact_icon_round" />
 
             <TextView
                 android:id="@+id/name"
@@ -31,11 +50,11 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
                 android:layout_marginStart="8dp"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="44dp"
                 android:text="Name:"
                 android:translationZ="10dp"
                 app:layout_constraintEnd_toEndOf="@+id/contact_button"
-                app:layout_constraintHorizontal_bias="0.024"
+                app:layout_constraintHorizontal_bias="0.125"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -44,17 +63,21 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="80dp"
                 android:text="Time Left:"
                 android:translationZ="10dp"
                 app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.483"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <Button
                 android:id="@+id/contact_button"
                 android:layout_width="match_parent"
-                android:layout_height="52dp" />
+                android:layout_height="150dp"
+                android:background="@drawable/empty_button_small"
+                app:layout_constraintBottom_toBottomOf="parent"
+                tools:layout_editor_absoluteX="101dp" />
 
             <ProgressBar
                 android:id="@+id/progressBarTimeLeft"
@@ -69,7 +92,8 @@
                 app:layout_constraintBottom_toBottomOf="@+id/contact_button"
                 app:layout_constraintEnd_toEndOf="@+id/contact_button"
                 app:layout_constraintStart_toStartOf="@+id/contact_button"
-                app:layout_constraintTop_toTopOf="@+id/timeLeft" />
+                app:layout_constraintTop_toTopOf="@+id/timeLeft"
+                app:layout_constraintVertical_bias="0.86" />
         </android.support.constraint.ConstraintLayout>
     </LinearLayout>
 

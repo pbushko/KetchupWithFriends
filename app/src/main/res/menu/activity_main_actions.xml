@@ -2,7 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:KetchupWithFriends="http://schemas.android.com/apk/res-auto">
     <item android:id="@+id/action_settings"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/ic_settings_button_round"
         android:title="Settings"
         KetchupWithFriends:showAsAction="always"/>
 </menu>
