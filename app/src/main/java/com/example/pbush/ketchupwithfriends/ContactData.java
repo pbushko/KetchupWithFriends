@@ -109,20 +109,20 @@ public class ContactData implements Comparable<ContactData> {
     /* provide Context to get thumbnail profile pic and save under pic field */
     public void updatePicture(Context context)
     {
-        long number = phoneNum.get(0);
+        long number = Long.parseLong(phoneNum.get(0));
         Uri contactUri = ContentUris.withAppendedId(Contacts.CONTENT_URI, number);
         Uri photoUri = Uri.withAppendedPath(contactUri, Contacts.Photo.CONTENT_DIRECTORY);
         Cursor cursor = context.getContentResolver().query(photoUri,
                 new String[] {Contacts.Photo.PHOTO}, null, null, null);
         if (cursor == null) {
-            return null;
+            return;
         }
         try {
             if (cursor.moveToFirst()) {
                 byte[] data = cursor.getBlob(0);
                 if (data != null) {
                     pic = new ByteArrayInputStream(data);
-                    return null;
+                    return;
                 }
             }
         } finally {
