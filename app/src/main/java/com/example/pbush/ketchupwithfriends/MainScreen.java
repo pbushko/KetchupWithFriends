@@ -112,13 +112,13 @@ public class MainScreen extends AppCompatActivity {
         });
         signInButton.setVisibility(View.INVISIBLE);
 
-        saveButton = findViewById(R.id.saveButton);
+        /*saveButton = findViewById(R.id.saveButton);
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 saveInfo();
             }
-        });
+        });*/
 
         //TextView achievementText = (TextView) findViewById(R.id.achievements);
         String text = "";
@@ -294,7 +294,8 @@ public class MainScreen extends AppCompatActivity {
         {
             //sign in/create an account with google in the firebase UI
             //creating the firebase sign in page
-            signInButton.setVisibility(View.VISIBLE);
+            Intent i = new Intent(MainScreen.this, FirebaseUIActivity.class);
+            startActivity(i);
 
         }
         else{
@@ -331,7 +332,7 @@ public class MainScreen extends AppCompatActivity {
                 // whenever data at this location is updated.
                 for (DataSnapshot snap : dataSnapshot.getChildren()){
                     //mContacts.add(snap.getValue(ContactData.class));
-                    Log.d("write contacts", "Value is: " + mContacts.get(mContacts.size()-1));
+                    //Log.d("write contacts", "Value is: " + mContacts.get(mContacts.size()-1));
                 }
                 if (saving == SAVING){
                     saving = DONE_SAVING;
@@ -570,6 +571,9 @@ public class MainScreen extends AppCompatActivity {
             }
         }
         loadingScreen.setVisibility(View.INVISIBLE);
+        if (loaded == LOADED) {
+            saveInfo();
+        }
         Log.d("write data to screen", "done writing data");
     }
 

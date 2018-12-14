@@ -108,6 +108,7 @@ public class FirebaseUIActivity extends AppCompatActivity {
                 GoogleSignInAccount account = task.getResult(ApiException.class);
                 firebaseAuthWithGoogle(account);
 
+
             } catch (ApiException e) {
                 // Google Sign In failed, update UI appropriately
                 Log.w("google", "Google sign in failed", e);
@@ -129,6 +130,9 @@ public class FirebaseUIActivity extends AppCompatActivity {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d("google", "signInWithCredential:success");
                             FirebaseUser user = mAuth.getCurrentUser();
+                            Intent i = new Intent(FirebaseUIActivity.this, MainScreen.class);
+                            startActivity(i);
+
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w("google", "signInWithCredential:failure", task.getException());

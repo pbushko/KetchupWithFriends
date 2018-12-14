@@ -68,29 +68,6 @@
                             android:layout_height="wrap_content"
                             android:orientation="vertical" >
 
-                            <Button
-                                android:id="@+id/goToMessagingButton"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:text="msg"
-                                android:visibility="visible"
-                                tools:layout_editor_absoluteX="103dp"
-                                tools:layout_editor_absoluteY="227dp" />
-
-                            <GridLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent">
-
-                                <Button
-                                    android:id="@+id/saveButton"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:text="Save"
-                                    android:visibility="visible"
-                                    tools:layout_editor_absoluteX="103dp"
-                                    tools:layout_editor_absoluteY="227dp" />
-
-                            </GridLayout>
                         </LinearLayout>
 
                     </ScrollView>
