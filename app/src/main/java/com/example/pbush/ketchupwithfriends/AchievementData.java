@@ -27,13 +27,13 @@ public class AchievementData {
     public static int[] nContactBench = {10, 20, 30, 40, 50, 60};
     public static int[] nMessageBench = {1, 10, 20, 50, 100, 1000};
     public static int[] loginStreakBench = {3, 5, 10, 20, 50, 100};
-    public static long loginTime = MS_PER_HOUR / 6 // in milisecond
+    public static long loginTime = MS_PER_HOUR / 6; // in milisecond
     public static int[] deadlineBench = {5, 20, 50, 100, 150, 300};
     public static int[] messageStreakBench = {5, 10, 30, 50, 100, 200};
 
 
     public int nMessages;
-    public int nContacts:
+    public int nContacts;
     public int loginStreak;
     public long lastLogin;
     public int deadlinesHit;
@@ -42,7 +42,7 @@ public class AchievementData {
     public int maxStreak;
      */
 
-    public AchievementData {
+    public AchievementData() {
         nContactAchieve = new boolean[6];
         nMessageAchieve = new boolean[6];
         loginStreakAchieve = new boolean[6];
@@ -90,7 +90,7 @@ public class AchievementData {
         }
         // not next day yet; don't do anything
 
-        benchTest(loginStreak, loginStreakBench);
+        benchTest(loginStreak, loginStreakBench, loginStreakAchieve);
     }
 /*
     public void update(MessageData m, List<ContactData> mContacts) {
@@ -101,8 +101,8 @@ public class AchievementData {
     // check if new achivement should be given, if so change it and return true
     // if not return false
     public boolean benchTest(int score, int[] test, boolean[] achieve) {
-        boolean change  = false
-        for (int i; i < test.length; i++) {
+        boolean change  = false;
+        for (int i = 0; i < test.length; i++) {
             // does the score meet the benchmark
             if (score >= test[i]) {
                 // if this achievement has not been given

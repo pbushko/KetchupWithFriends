@@ -9,6 +9,7 @@ import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
@@ -81,6 +82,8 @@ public class MainScreen extends AppCompatActivity {
     // Add this to firebase as well
     private AchievementData achieve;
 
+    private MediaPlayer mediaPlayer;
+
     //the messages and contacts
     private List<MessageData> mMessages;
     private List<ContactData> mContacts;
@@ -152,6 +155,8 @@ public class MainScreen extends AppCompatActivity {
             }
         };
 
+        mediaPlayer = MediaPlayer.create(getApplicationContext(), R.raw.free_music);
+        mediaPlayer.start();
     }
 
     @Override
@@ -468,7 +473,7 @@ public class MainScreen extends AppCompatActivity {
             }
 
             //sorting the messages by number and showing them
-            for (int i = mMessages.size(); i >= 0; i--)
+            for (int i = mMessages.size() - 1; i >= 0; i--)
             {
                 MessageData message = mMessages.get(i);
                 //checking if the phone number already is in a contactData obj
