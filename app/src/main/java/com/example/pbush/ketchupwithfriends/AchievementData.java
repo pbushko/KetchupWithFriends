@@ -2,6 +2,7 @@ package com.example.pbush.ketchupwithfriends;
 
 
 import java.util.List;
+import java.util.Calendar;
 
 /**
  * Created by pbush on 12/9/2018.
@@ -13,6 +14,9 @@ import java.util.List;
  *  contact. This class also makes modification to those fields.
  */
 public class AchievementData {
+    public final static int MS_PER_HOUR = 3600000;
+    public final static int MS_PER_DAY = 24 * MS_PER_HOUR;
+
     public boolean[] nContactAchieve;
     public boolean[] nMessageAchieve;
     public boolean[] loginStreakAchieve;
@@ -23,7 +27,7 @@ public class AchievementData {
     public static int[] nContactBench = {10, 20, 30, 40, 50, 60};
     public static int[] nMessageBench = {1, 10, 20, 50, 100, 1000};
     public static int[] loginStreakBench = {3, 5, 10, 20, 50, 100};
-    public static long loginTime = 60000 // in milisecond
+    public static long loginTime = MS_PER_HOUR / 6 // in milisecond
     public static int[] deadlineBench = {5, 20, 50, 100, 150, 300};
     public static int[] messageStreakBench = {5, 10, 30, 50, 100, 200};
 
@@ -42,8 +46,9 @@ public class AchievementData {
         nContactAchieve = new boolean[6];
         nMessageAchieve = new boolean[6];
         loginStreakAchieve = new boolean[6];
-        messageStreakAchieve = new boolean[6];
         deadlineAchieve = new boolean[6];
+        messageStreakAchieve = new boolean[6];
+
     }
 
     // increment and check number of contacts added
@@ -65,30 +70,34 @@ public class AchievementData {
             loginStreak = 1;
             lastLogin = currentTime;
         }
-        // new day yet?
-        else if ((currentTime - lastLogin) > loginTime))
+        long miliIntoLastLogin = lastLogin % MS_PER_DAY;
+        long diff = currentTime - lastLogin;
+
+        long timeRemainingDay = MS_PER_DAY - miliIntoLastLogin;
+        long endOfNextday = lastLogin + timeRemainingDay + MS_PER_DAY;
+
+        // not the next day; reset streak
+        if (currentTime >= endOfNextday)
         {
-            // not two days in a row, loses streak
-            if ((currentTime - lastLogin) > 2*loginTime)
-            {
-                lastLogin = currentTime;
-                loginStreak = 1;
-            }
-            // streak continues
-            else
-            {
-                lastLogin = currentTime;
-                loginStreak++;
-            }
+            lastLogin = currentTime;
+            loginStreak = 1;
         }
-        // not new day = do nothing
+        // next day; continue streak
+        else if (currentTime < endOfNextday && diff > timeRemainingDay)
+        {
+            lastLogin = currentTime;
+            loginStreak++;
+        }
+        // not next day yet; don't do anything
+
         benchTest(loginStreak, loginStreakBench);
     }
-
+/*
     public void update(MessageData m, List<ContactData> mContacts) {
 
 
     }
+    */
     // check if new achivement should be given, if so change it and return true
     // if not return false
     public boolean benchTest(int score, int[] test, boolean[] achieve) {

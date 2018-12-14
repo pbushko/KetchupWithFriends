@@ -106,6 +106,17 @@ public class ContactData implements Comparable<ContactData> {
             deadlineHere = false;
         return;
     }
+
+    public void messageDeadline(MessageData message)
+    {
+        if (message.timestamp > (nextMessageDeadline))
+            return true;
+        else
+            return false;
+        return;
+    }
+
+    /* adopted this code from a post on Stackoverflow */
     /* provide Context to get thumbnail profile pic and save under pic field */
     public void updatePicture(Context context)
     {

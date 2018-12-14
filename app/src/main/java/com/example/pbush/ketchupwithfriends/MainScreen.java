@@ -122,7 +122,9 @@ public class MainScreen extends AppCompatActivity {
 
         //TextView achievementText = (TextView) findViewById(R.id.achievements);
         String text = "";
-
+        // acheive.
+        achieve = new AchievementData();
+        achieve.checkday(Calendar.getInstance().getTimeInMillis());
         writeDataToScreen();
     }
 
@@ -466,15 +468,16 @@ public class MainScreen extends AppCompatActivity {
             }
 
             //sorting the messages by number and showing them
-            for (MessageData message : mMessages)
+            for (int i = mMessages.size(); i >= 0; i--)
             {
+                MessageData message = mMessages.get(i);
                 //checking if the phone number already is in a contactData obj
                 //this will be fixed later when we just get data from contacts
                 for (ContactData contact : mContacts)
                 {
                     if(contact.phoneNum.get(0).compareTo(formatPhoneNum(message.phoneNum)) == 0) {
-
                         contact.addMessage(message);
+                        achieve.incrMsg();
                         Log.d("adding messages", "added a new message");
                     }
                 }
