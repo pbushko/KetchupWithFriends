@@ -7,20 +7,6 @@
     android:layout_height="match_parent"
     tools:context="com.example.pbush.ketchupwithfriends.MainScreen">
 
-    <Button
-        android:id="@+id/signInButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Button" />
-
-    <ImageView
-        android:id="@+id/peach_puff_background"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:translationZ="-50dp"
-        app:srcCompat="@drawable/peach_puff_polka_dot"
-        tools:layout_editor_absoluteY="455dp" />
-
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -30,7 +16,7 @@
             android:id="@+id/loadingScreen"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:srcCompat="@drawable/tomato_yay_small" />
+            app:srcCompat="@drawable/login_new" />
 
     </FrameLayout>
 
@@ -61,6 +47,7 @@
                     android:id="@+id/tab1"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:background="@drawable/peach_puff_polka_dot"
                     android:orientation="vertical">
 
                     <ScrollView
@@ -87,12 +74,12 @@
 
                     <android.support.constraint.ConstraintLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent">
+                        android:layout_height="match_parent"
+                        android:background="@drawable/achievement_sky_background">
 
                         <ScrollView
                             android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:translationZ="5dp">
+                            android:layout_height="match_parent">
 
                             <LinearLayout
                                 android:layout_width="match_parent"
@@ -101,8 +88,8 @@
 
                                 <ImageView
                                     android:id="@+id/imageView4"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="169dp"
                                     android:translationZ="-10dp"
                                     app:srcCompat="@drawable/achievement_header"
                                     tools:layout_editor_absoluteX="0dp"
@@ -113,53 +100,72 @@
                                     android:layout_height="match_parent">
 
                                     <ImageView
-                                        android:id="@+id/imageView"
+                                        android:id="@+id/vine1"
                                         android:layout_width="wrap_content"
                                         android:layout_height="300dp"
                                         android:contentDescription="Temp bg of achievements"
                                         app:layout_constraintEnd_toEndOf="parent"
                                         app:layout_constraintTop_toTopOf="parent"
-                                        app:srcCompat="@drawable/achievement_tomato_vine" />
+                                        app:srcCompat="@drawable/tomato_vine" />
 
                                     <ImageView
-                                        android:id="@+id/cloud4"
-                                        android:layout_width="251dp"
-                                        android:layout_height="116dp"
-                                        android:layout_marginEnd="204dp"
-                                        android:layout_marginTop="184dp"
+                                        android:id="@+id/tomato"
+                                        android:layout_width="100dp"
+                                        android:layout_height="100dp"
+                                        android:layout_marginBottom="8dp"
+                                        android:layout_marginStart="8dp"
+                                        android:contentDescription="Temp bg of achievements"
+                                        app:layout_constraintBottom_toBottomOf="parent"
                                         app:layout_constraintEnd_toEndOf="parent"
-                                        app:layout_constraintTop_toTopOf="parent"
-                                        app:srcCompat="@drawable/achievement_cloud_left" />
-
-                                    <ImageView
-                                        android:id="@+id/cloud3"
-                                        android:layout_width="251dp"
-                                        android:layout_height="116dp"
-                                        android:layout_marginEnd="192dp"
-                                        android:layout_marginTop="24dp"
-                                        app:layout_constraintEnd_toEndOf="parent"
-                                        app:layout_constraintTop_toTopOf="parent"
-                                        app:srcCompat="@drawable/achievement_cloud_left" />
-
-                                    <ImageView
-                                        android:id="@+id/cloud"
-                                        android:layout_width="251dp"
-                                        android:layout_height="116dp"
-                                        android:layout_marginStart="172dp"
-                                        android:layout_marginTop="52dp"
+                                        app:layout_constraintHorizontal_bias="0.339"
                                         app:layout_constraintStart_toStartOf="parent"
                                         app:layout_constraintTop_toTopOf="parent"
-                                        app:srcCompat="@drawable/achievement_cloud_right" />
+                                        app:layout_constraintVertical_bias="0.453"
+                                        app:srcCompat="@drawable/green_achievement_tomato" />
 
                                     <ImageView
-                                        android:id="@+id/cloud2"
-                                        android:layout_width="251dp"
-                                        android:layout_height="116dp"
-                                        android:layout_marginStart="180dp"
-                                        android:layout_marginTop="168dp"
+                                        android:id="@+id/tomato1"
+                                        android:layout_width="100dp"
+                                        android:layout_height="100dp"
+                                        android:layout_marginBottom="8dp"
+                                        android:layout_marginStart="8dp"
+                                        android:contentDescription="Temp bg of achievements"
+                                        app:layout_constraintBottom_toBottomOf="parent"
+                                        app:layout_constraintEnd_toEndOf="parent"
+                                        app:layout_constraintHorizontal_bias="0.514"
                                         app:layout_constraintStart_toStartOf="parent"
                                         app:layout_constraintTop_toTopOf="parent"
-                                        app:srcCompat="@drawable/achievement_cloud_right" />
+                                        app:layout_constraintVertical_bias="0.291"
+                                        app:srcCompat="@drawable/green_achievement_tomato" />
+
+                                    <ImageView
+                                        android:id="@+id/tomato3"
+                                        android:layout_width="100dp"
+                                        android:layout_height="100dp"
+                                        android:layout_marginBottom="8dp"
+                                        android:layout_marginStart="8dp"
+                                        android:contentDescription="Temp bg of achievements"
+                                        app:layout_constraintBottom_toBottomOf="parent"
+                                        app:layout_constraintEnd_toEndOf="parent"
+                                        app:layout_constraintHorizontal_bias="0.567"
+                                        app:layout_constraintStart_toStartOf="parent"
+                                        app:layout_constraintTop_toTopOf="parent"
+                                        app:layout_constraintVertical_bias="0.807"
+                                        app:srcCompat="@drawable/green_achievement_tomato" />
+
+                                    <ImageView
+                                        android:id="@+id/tomato2"
+                                        android:layout_width="100dp"
+                                        android:layout_height="90dp"
+                                        android:layout_marginEnd="8dp"
+                                        android:layout_marginStart="8dp"
+                                        android:layout_marginTop="208dp"
+                                        android:contentDescription="Temp bg of achievements"
+                                        app:layout_constraintEnd_toEndOf="parent"
+                                        app:layout_constraintHorizontal_bias="0.379"
+                                        app:layout_constraintStart_toStartOf="parent"
+                                        app:layout_constraintTop_toTopOf="parent"
+                                        app:srcCompat="@drawable/green_achievement_tomato" />
 
                                     <TextView
                                         android:id="@+id/textView4"
@@ -167,44 +173,60 @@
                                         android:layout_height="wrap_content"
                                         android:layout_marginEnd="8dp"
                                         android:layout_marginStart="8dp"
-                                        android:layout_marginTop="236dp"
-                                        android:text="Add 10 friends"
-                                        android:textColor="@android:color/background_dark"
-                                        app:layout_constraintEnd_toEndOf="parent"
-                                        app:layout_constraintHorizontal_bias="0.894"
-                                        app:layout_constraintStart_toStartOf="parent"
-                                        app:layout_constraintTop_toTopOf="@+id/imageView"
+                                        android:layout_marginTop="216dp"
                                         android:fontFamily="casual"
-                                        android:textStyle="bold"/>
+                                        android:text="Add 10 friends"
+                                        android:textColor="@android:color/background_light"
+                                        android:textStyle="bold"
+                                        app:layout_constraintEnd_toEndOf="parent"
+                                        app:layout_constraintHorizontal_bias="0.842"
+                                        app:layout_constraintStart_toStartOf="parent"
+                                        app:layout_constraintTop_toTopOf="@+id/vine1" />
 
                                     <TextView
                                         android:id="@+id/textView5"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:layout_marginEnd="300dp"
-                                        android:layout_marginTop="76dp"
-                                        android:text="Share Our\nApp on FB!"
-                                        android:textColor="@android:color/background_dark"
-                                        app:layout_constraintEnd_toEndOf="parent"
-                                        app:layout_constraintTop_toTopOf="parent"
+                                        android:layout_marginEnd="288dp"
+                                        android:layout_marginTop="132dp"
                                         android:fontFamily="casual"
-                                        android:textStyle="bold"/>
+                                        android:text="Share Our\nApp on FB!"
+                                        android:textColor="@android:color/background_light"
+                                        android:textStyle="bold"
+                                        app:layout_constraintEnd_toEndOf="parent"
+                                        app:layout_constraintTop_toTopOf="parent" />
 
                                     <TextView
                                         android:id="@+id/textView3"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:layout_marginBottom="28dp"
+                                        android:layout_marginBottom="16dp"
                                         android:layout_marginEnd="8dp"
                                         android:layout_marginStart="8dp"
-                                        android:text="Maintain a\n10 Day Streak"
-                                        android:textColor="@android:color/background_dark"
-                                        app:layout_constraintBottom_toBottomOf="@+id/imageView"
-                                        app:layout_constraintEnd_toEndOf="parent"
-                                        app:layout_constraintHorizontal_bias="0.0"
-                                        app:layout_constraintStart_toStartOf="parent"
                                         android:fontFamily="casual"
-                                        android:textStyle="bold"/>
+                                        android:text="Maintain a\n10 Day Streak"
+                                        android:textColor="@android:color/background_light"
+                                        android:textStyle="bold"
+                                        app:layout_constraintBottom_toBottomOf="@+id/vine1"
+                                        app:layout_constraintEnd_toEndOf="parent"
+                                        app:layout_constraintHorizontal_bias="0.19"
+                                        app:layout_constraintStart_toStartOf="parent" />
+
+                                    <TextView
+                                        android:id="@+id/textView2"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginBottom="192dp"
+                                        android:layout_marginEnd="8dp"
+                                        android:layout_marginStart="8dp"
+                                        android:fontFamily="casual"
+                                        android:text="Send 1000 messages"
+                                        android:textColor="@android:color/background_light"
+                                        android:textStyle="bold"
+                                        app:layout_constraintBottom_toBottomOf="@+id/vine1"
+                                        app:layout_constraintEnd_toEndOf="parent"
+                                        app:layout_constraintHorizontal_bias="0.915"
+                                        app:layout_constraintStart_toStartOf="parent" />
                                 </android.support.constraint.ConstraintLayout>
 
                                 <android.support.constraint.ConstraintLayout
@@ -212,25 +234,18 @@
                                     android:layout_height="match_parent">
 
                                     <ImageView
-                                        android:id="@+id/imageView2"
+                                        android:id="@+id/vine2"
                                         android:layout_width="wrap_content"
                                         android:layout_height="300dp"
                                         android:contentDescription="Temp bg of achievements"
                                         android:cropToPadding="false"
                                         app:layout_constraintEnd_toEndOf="parent"
                                         app:layout_constraintTop_toTopOf="parent"
-                                        app:srcCompat="@drawable/achievement_tomato_vine" />
+                                        app:srcCompat="@drawable/tomato_vine" />
                                 </android.support.constraint.ConstraintLayout>
 
                             </LinearLayout>
                         </ScrollView>
-
-                        <ImageView
-                            android:id="@+id/imageView3"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:translationZ="-10dp"
-                            app:srcCompat="@drawable/achievement_sky_background" />
 
                     </android.support.constraint.ConstraintLayout>
 

@@ -75,7 +75,7 @@ public class MainScreen extends AppCompatActivity {
     private FirebaseDatabase mDatabase;
     private DatabaseReference mDatabaseContacts;
     private DatabaseReference mDatabaseLastScrape;
-    private Button signInButton;
+    //private Button signInButton;
     private Button saveButton;
     private long lastDataScrape;
     private ImageView loadingScreen;
@@ -83,6 +83,8 @@ public class MainScreen extends AppCompatActivity {
     private AchievementData achieve;
 
     private MediaPlayer mediaPlayer;
+
+    private ImageView achievementTomato;
 
     //the messages and contacts
     private List<MessageData> mMessages;
@@ -105,26 +107,9 @@ public class MainScreen extends AppCompatActivity {
         spec.setIndicator("Achievements");
         host.addTab(spec);
 
-        signInButton = findViewById(R.id.signInButton);
-        signInButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent i = new Intent(MainScreen.this, FirebaseUIActivity.class);
-                startActivity(i);
-            }
-        });
-        signInButton.setVisibility(View.INVISIBLE);
+        //getting the achievement tomato to change
+        achievementTomato = findViewById(R.id.tomato1);
 
-        /*saveButton = findViewById(R.id.saveButton);
-        saveButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                saveInfo();
-            }
-        });*/
-
-        //TextView achievementText = (TextView) findViewById(R.id.achievements);
-        String text = "";
         // acheive.
         achieve = new AchievementData();
         achieve.checkday(Calendar.getInstance().getTimeInMillis());
@@ -150,7 +135,7 @@ public class MainScreen extends AppCompatActivity {
                 if(firebaseAuth.getCurrentUser() != null)
                 {
                     //hide the sign in button
-                    signInButton.setVisibility(View.INVISIBLE);
+                    //signInButton.setVisibility(View.INVISIBLE);
                 }
             }
         };
@@ -308,7 +293,7 @@ public class MainScreen extends AppCompatActivity {
         else{
             Log.d("sign in", "signed in!");
             loadingScreen.setVisibility(View.VISIBLE);
-            signInButton.setVisibility(View.INVISIBLE);
+            //signInButton.setVisibility(View.INVISIBLE);
             //getting the saved and new info
             mContacts = new ArrayList<ContactData>();
 
@@ -487,6 +472,9 @@ public class MainScreen extends AppCompatActivity {
                     }
                 }
             }
+            if (achieve.messageAchievementProgress()){
+                achievementTomato.setImageResource(R.drawable.red_achievement_tomato);
+            }
             //removing contacts to print if they have never been messaged
             int contactOrigLen = mContacts.size();
             int[] indxToRem;
@@ -520,7 +508,6 @@ public class MainScreen extends AppCompatActivity {
             }
 
             Log.d("rem contacts", "original size: " + contactOrigLen);
-
             Log.d("rem contacts", "new size: " + mContacts.size());
             //just need this to get the set dates since that's where their
             //contact deadlines get set rn
@@ -559,9 +546,9 @@ public class MainScreen extends AppCompatActivity {
                     public void onClick(View view)
                     {
                         //the user input button
-                        FragmentManager fragmentManager = getFragmentManager();
-                        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                        Fragment y = new GetUserInput();
+                        final FragmentManager fragmentManager = getFragmentManager();
+                        final FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                        final Fragment y = new GetUserInput();
                         final GetUserInput frag = (GetUserInput)y;
                         fragmentTransaction.add(button.getLayout(), y, "HELLO");
                         fragmentTransaction.commitNow();
@@ -573,6 +560,13 @@ public class MainScreen extends AppCompatActivity {
                                 int toAdd = frag.getNewContactFreq();
                                 button.getButtonContact().setContactFrequency(toAdd);
                                 setMainScreen();
+                            }
+                        });
+                        Button cancel = frag.getCancelButton();
+                        cancel.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                               setMainScreen();
                             }
                         });
                     }

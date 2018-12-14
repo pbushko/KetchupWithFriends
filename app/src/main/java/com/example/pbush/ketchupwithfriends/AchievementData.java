@@ -62,6 +62,10 @@ public class AchievementData {
         nMessages++;
         benchTest(nMessages, nMessageBench, nMessageAchieve);
     }
+
+    public boolean messageAchievementProgress() {
+        return nMessages > nMessageBench[0];
+    }
     // check day
     public void checkday(long currentTime) {
         // first time
