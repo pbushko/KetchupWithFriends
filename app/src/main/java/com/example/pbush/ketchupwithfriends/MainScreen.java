@@ -98,7 +98,7 @@ public class MainScreen extends AppCompatActivity {
         host.addTab(spec);
         //Tab 2
         spec = host.newTabSpec("Achievements");
-        spec.setContent(R.id.tab2);
+        spec.setContent(R.id.achivementPage);
         spec.setIndicator("Achievements");
         host.addTab(spec);
 
