@@ -16,28 +16,33 @@ public class AchievementData {
     public boolean[] nContactAchieve;
     public boolean[] nMessageAchieve;
     public boolean[] loginStreakAchieve;
-    public boolean[] messageStreakAchieve;
     public boolean[] deadlineAchieve;
+    public boolean[] messageStreakAchieve;
+
 
     public static int[] nContactBench = {10, 20, 30, 40, 50, 60};
-    public static int[] nMessageBench = {1, 20, 50, 100, 1000};
-    public static int[] loginStreakBench = {5, 10, 20, 100};
-    public static int[] messageStreakBench = {5, 10, 30, 200};
-    public static int[] deadlineBench = {5, 20, 50, 100};
+    public static int[] nMessageBench = {1, 10, 20, 50, 100, 1000};
+    public static int[] loginStreakBench = {3, 5, 10, 20, 50, 100};
+    public static long loginTime = 60000 // in milisecond
+    public static int[] deadlineBench = {5, 20, 50, 100, 150, 300};
+    public static int[] messageStreakBench = {5, 10, 30, 50, 100, 200};
+
 
     public int nMessages;
     public int nContacts:
     public int loginStreak;
+    public long lastLogin;
     public int deadlinesHit;
+
     /*
     public int maxStreak;
      */
 
     public AchievementData {
         nContactAchieve = new boolean[6];
-        nMessageAchieve = new boolean[5];
-        loginStreakAchieve = new boolean[4];
-        messageStreakAchieve = new boolean[4];
+        nMessageAchieve = new boolean[6];
+        loginStreakAchieve = new boolean[6];
+        messageStreakAchieve = new boolean[6];
         deadlineAchieve = new boolean[6];
     }
 
@@ -51,6 +56,33 @@ public class AchievementData {
     public void incrMsg() {
         nMessages++;
         benchTest(nMessages, nMessageBench, nMessageAchieve);
+    }
+    // check day
+    public void checkday(long currentTime) {
+        // first time
+        if (lastLogin == 0)
+        {
+            loginStreak = 1;
+            lastLogin = currentTime;
+        }
+        // new day yet?
+        else if ((currentTime - lastLogin) > loginTime))
+        {
+            // not two days in a row, loses streak
+            if ((currentTime - lastLogin) > 2*loginTime)
+            {
+                lastLogin = currentTime;
+                loginStreak = 1;
+            }
+            // streak continues
+            else
+            {
+                lastLogin = currentTime;
+                loginStreak++;
+            }
+        }
+        // not new day = do nothing
+        benchTest(loginStreak, loginStreakBench);
     }
 
     public void update(MessageData m, List<ContactData> mContacts) {

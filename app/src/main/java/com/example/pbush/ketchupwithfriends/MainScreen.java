@@ -473,6 +473,7 @@ public class MainScreen extends AppCompatActivity {
                 for (ContactData contact : mContacts)
                 {
                     if(contact.phoneNum.get(0).compareTo(formatPhoneNum(message.phoneNum)) == 0) {
+
                         contact.addMessage(message);
                         Log.d("adding messages", "added a new message");
                     }
