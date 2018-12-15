@@ -48,14 +48,14 @@
                 android:layout_marginEnd="8dp"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="44dp"
+                android:fontFamily="casual"
                 android:text="Name:"
+                android:textAlignment="center"
+                android:textStyle="bold"
                 android:translationZ="10dp"
                 app:layout_constraintEnd_toEndOf="@+id/contact_button"
-                app:layout_constraintHorizontal_bias="0.125"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                android:fontFamily="casual"
-                android:textStyle="bold"/>
+                app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
                 android:id="@+id/timeLeft"
@@ -63,14 +63,14 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
                 android:layout_marginTop="80dp"
+                android:fontFamily="casual"
                 android:text="Time Left:"
+                android:textStyle="bold"
                 android:translationZ="10dp"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.483"
+                app:layout_constraintHorizontal_bias="0.511"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                android:fontFamily="casual"
-                android:textStyle="bold"/>
+                app:layout_constraintTop_toTopOf="parent" />
 
             <Button
                 android:id="@+id/contact_button"
@@ -92,9 +92,10 @@
                 android:translationZ="10dp"
                 app:layout_constraintBottom_toBottomOf="@+id/contact_button"
                 app:layout_constraintEnd_toEndOf="@+id/contact_button"
+                app:layout_constraintHorizontal_bias="0.497"
                 app:layout_constraintStart_toStartOf="@+id/contact_button"
                 app:layout_constraintTop_toTopOf="@+id/timeLeft"
-                app:layout_constraintVertical_bias="0.86" />
+                app:layout_constraintVertical_bias="0.214" />
         </android.support.constraint.ConstraintLayout>
     </LinearLayout>
 
