@@ -31,6 +31,8 @@ import android.widget.Spinner;
 import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.provider.ContactsContract.Contacts;
+import android.provider.ContactsContract.CommonDataKinds.Email;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -62,12 +64,15 @@ import retrofit2.http.GET;
 public class MainScreen extends AppCompatActivity {
 
     public static int forIds = 0;
-
     final private int LOADED = 1;
+    final private int LOADING = 0;
     final private int SAVING = 1;
     final private int DONE_SAVING = 0;
+    private static final int CONTACT_PICKER_RESULT = 1001;
     private int loaded;
     private int saving;
+
+    private View mView;
 
     //firebase items
     private FirebaseAuth mAuth;
@@ -106,6 +111,14 @@ public class MainScreen extends AppCompatActivity {
         spec.setContent(R.id.achivementPage);
         spec.setIndicator("Achievements");
         host.addTab(spec);
+
+        Button b = findViewById(R.id.get_contacts);
+        b.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                doLaunchContactPicker(view);
+            }
+        }
+        );
 
         //getting the achievement tomato to change
         achievementTomato = findViewById(R.id.tomato1);
@@ -202,7 +215,6 @@ public class MainScreen extends AppCompatActivity {
                     lastTimeStamp = singleSms.timestamp;
                     messages.add(singleSms);
                     numNewMessages++;
-                    //Log.d("newMessageScrape", "Num new messages: " + numNewMessages);
 
                     // process new message for achievement if this is not first installation
                     /* uncomment-kasarn
@@ -320,12 +332,6 @@ public class MainScreen extends AppCompatActivity {
         mDatabaseContacts.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                // This method is called once with the initial value and again
-                // whenever data at this location is updated.
-                for (DataSnapshot snap : dataSnapshot.getChildren()){
-                    //mContacts.add(snap.getValue(ContactData.class));
-                    //Log.d("write contacts", "Value is: " + mContacts.get(mContacts.size()-1));
-                }
                 if (saving == SAVING){
                     saving = DONE_SAVING;
                 }
@@ -367,16 +373,19 @@ public class MainScreen extends AppCompatActivity {
                 if (saving == DONE_SAVING) {
                     // This method is called once with the initial value and again
                     // whenever data at this location is updated.
+
                     mContacts = new ArrayList<ContactData>();
                     for (DataSnapshot snap : dataSnapshot.getChildren()) {
                         mContacts.add(snap.getValue(ContactData.class));
                         //Log.d("read contacts", "contact: " + mContacts.get(0));
                     }
+
                     Log.d("sign in", "outside the read contacts function");
                     //putting the data onto the screen
                     if (loaded == LOADED) {
                         getNewInfo();
-                        writeDataToScreen();
+                        setMainScreen();
+                        loaded = LOADING;
                     } else
                         loaded = LOADED;
                 }
@@ -391,14 +400,17 @@ public class MainScreen extends AppCompatActivity {
         mDatabaseLastScrape.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+
                 for (DataSnapshot snap : dataSnapshot.getChildren()){
                     lastDataScrape = snap.getValue(Long.class);
                     Log.d("sign in", "last data scrape time! it was: " + lastDataScrape);
                 }
+
                 Log.d("sign in", "outside the scrape function");
                 if(loaded == LOADED) {
                     getNewInfo();
-                    writeDataToScreen();
+                    setMainScreen();
+                    loaded = LOADING;
                 }
                 else
                     loaded = LOADED;
@@ -575,7 +587,7 @@ public class MainScreen extends AppCompatActivity {
         }
         loadingScreen.setVisibility(View.INVISIBLE);
         if (loaded == LOADED) {
-            saveInfo();
+            //saveInfo();
         }
         Log.d("write data to screen", "done writing data");
     }
@@ -600,6 +612,77 @@ public class MainScreen extends AppCompatActivity {
                     }
                 }
             });
+        }
+    }
+
+    public void doLaunchContactPicker(View view) {
+        Intent contactPickerIntent = new Intent(Intent.ACTION_PICK,
+                Contacts.CONTENT_URI);
+        contactPickerIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivityForResult(contactPickerIntent, CONTACT_PICKER_RESULT);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        String DEBUG_TAG = "picker";
+        if (resultCode == RESULT_OK) {
+            switch (requestCode) {
+                case CONTACT_PICKER_RESULT:
+                    Cursor cursor = null;
+                    try {
+                        Uri result = data.getData();
+                        Log.v(DEBUG_TAG, "Got a contact result: "
+                                + result.toString());
+
+                        // get the contact id from the Uri
+                        String id = result.getLastPathSegment();
+                        ContentResolver cr = this.getContentResolver();
+                        // query for everything email
+                        cursor = cr.query(ContactsContract.Contacts.CONTENT_URI,
+                                null, ContactsContract.Contacts._ID + "=?",
+                                new String[] { id },
+                                null);
+
+                        // let's just get the first email
+                        if (cursor.moveToFirst()) {
+                            //email = cursor.getString(forId);
+                            String contact = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
+                            int nameFieldColumnIndex = cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME);
+                            String name = cursor.getString(nameFieldColumnIndex);
+                            String number = "";
+                            //getting the phone number for everyone
+                            if (Integer.parseInt(cursor.getString(cursor.getColumnIndex(
+                                    ContactsContract.Contacts.HAS_PHONE_NUMBER))) > 0) {
+                                Cursor phoneCursor = cr.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                                        null,
+                                        ContactsContract.CommonDataKinds.Phone.CONTACT_ID +" = ?",
+                                        new String[]{id}, null);
+                                phoneCursor.moveToNext();
+                                int numberFieldColumnIndex = phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
+                                number = formatPhoneNumber(phoneCursor.getString(numberFieldColumnIndex));
+                                phoneCursor.close();
+                            }
+                            ContactData c = new ContactData();
+                            c.id = id;
+                            c.name = name;
+                            c.addPhoneNumber(number);
+                            Log.v("contact", "Got: " + c);
+                            mContacts.add(c);
+                        } else {
+                            Log.w(DEBUG_TAG, "No results");
+                        }
+                    } catch (Exception e) {
+                        Log.e(DEBUG_TAG, "Failed to get contact data", e);
+                    } finally {
+                        if (cursor != null) {
+                            cursor.close();
+                        }
+                        setMainScreen();
+                    }
+                    break;
+            }
+        } else {
+            Log.w(DEBUG_TAG, "Warning: activity result not ok");
         }
     }
 

@@ -28,13 +28,14 @@ public class ContactData implements Comparable<ContactData> {
     public String id; //id number of the contact
     public String name; //name of the contact
     public List<String> phoneNum; //phone number(s) of the contact
-    public List<MessageData> messages; //messages sent to the contact
+    //public List<MessageData> messages; //messages sent to the contact
     public long nextMessageDeadline; //the next time this contact will need to be messaged to keep the streak
     public boolean deadlineHere;
     public int daysPerDeadline; //the amount of days that can pass between messages before breaking the streak
     public int relationshipPoints; //the "points" assigned to this contact
     public int streak; //the streak of consecutive times the contact has been messaged daily
     public long lastMessaged;
+    public int totalMessages;
     /* profile picture */
     public ByteArrayInputStream pic;
 
@@ -44,7 +45,8 @@ public class ContactData implements Comparable<ContactData> {
         phoneNum = new ArrayList<String>();
         id = "";
         name = "";
-        messages = new ArrayList<MessageData>();
+        totalMessages = 0;
+        //messages = new ArrayList<MessageData>();
         lastMessaged = 0;
         daysPerDeadline = 0;
         nextMessageDeadline = 0;
@@ -58,8 +60,9 @@ public class ContactData implements Comparable<ContactData> {
         phoneNum = new ArrayList<String>();
         id = "";
         addPhoneNumber(num);
-        messages = new ArrayList<MessageData>();
-        messages.add(m);
+        totalMessages = 0;
+        //messages = new ArrayList<MessageData>();
+        //messages.add(m);
         lastMessaged = 0;
         daysPerDeadline = 0;
         nextMessageDeadline = 0;
@@ -70,13 +73,14 @@ public class ContactData implements Comparable<ContactData> {
 
     public void addMessage(MessageData m)
     {
-        messages.add(m);
+        //messages.add(m);
         //checking if the last messaged time needs updated
         //need to expand this to also update the next message deadline too
         if (lastMessaged < m.timestamp) {
             lastMessaged = m.timestamp;
             setContactFrequency(daysPerDeadline);
         }
+        totalMessages++;
         return;
     }
 
@@ -143,20 +147,21 @@ public class ContactData implements Comparable<ContactData> {
 
     public String toString()
     {
-        if (messages.size() != 0) {
+        //if (messages.size() != 0) {
             DateFormat formatter = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss");
             if(nextMessageDeadline == 0)
                 setContactFrequency(5);
             return "\nName: " + name +
                     "\nPhone number: " + phoneNum.get(0) +
-                    "\nNum Messages: " + messages.size() +
+                    //"\nNum Messages: " + messages.size() +
                     "\nRelationship Points: " + relationshipPoints +
                     "\nLast Messaged:" + formatter.format(lastMessaged) +
                     "\nNext Deadline:" + formatter.format(nextMessageDeadline) +
                     "\nDays per Deadline:" + daysPerDeadline +
                     "\nDeadline?:" + deadlineHere +
                     "\n";
-        }
+        //}
+        /*
         else {
             return "\nName: " + name +
                     "\nPhone number: " + phoneNum.get(0) +
@@ -164,12 +169,15 @@ public class ContactData implements Comparable<ContactData> {
                     "\nRelationship Points: " + relationshipPoints +
                     "\nLast Messaged: Never" + "\n";
         }
+        */
     }
+
 
     public int numMessages()
     {
-        return messages.size();
+        return totalMessages;
     }
+
 
     @Override
     public int compareTo(ContactData c)
