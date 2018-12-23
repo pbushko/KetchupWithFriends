@@ -43,7 +43,7 @@ public class GetUserInput extends Fragment implements MainScreen.GetInput{
                 .createFromResource(getActivity(), R.array.time_options_array,
                         android.R.layout.simple_spinner_item);
 
-        // Specify the layout to use wohen the list of choices appears
+        // Specify the layout to use when the list of choices appears
         staticAdapter
                 .setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 

@@ -52,7 +52,7 @@ public class ContactButtonFragment extends Fragment implements MainScreen.Contac
                 Intent sendIntent = new Intent(Intent.ACTION_VIEW);
                 sendIntent.setType("vnd.android-dir/mms-sms");
                 sendIntent.putExtra("address", contact.phoneNum.get(0));
-                startActivity(sendIntent);
+                MainScreen.m.sendMessage(sendIntent);
             }
         });
         return v;
@@ -104,6 +104,11 @@ public class ContactButtonFragment extends Fragment implements MainScreen.Contac
     @Override
     public ContactData getButtonContact() {
         return contact;
+    }
+
+    public void setContactTime() {
+        this.resetButton(contact, idx);
+        return;
     }
 
     public Button getButton()
