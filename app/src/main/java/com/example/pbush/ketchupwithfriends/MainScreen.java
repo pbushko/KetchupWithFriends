@@ -86,6 +86,8 @@ public class MainScreen extends AppCompatActivity {
     private AchievementData achieve;
     private MediaPlayer mediaPlayer;
     private ImageView achievementTomato;
+    private List<GetContactsFragment> selectedContacts;
+    private Button mContactButton;
 
     private String userId;
 
@@ -118,8 +120,18 @@ public class MainScreen extends AppCompatActivity {
         }
         );
 
+        mContactButton = findViewById(R.id.get_multiple_contacts);
+        mContactButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                getMultipleContacts();
+            }}
+        );
+        mContactButton.setVisibility(View.INVISIBLE);
+
         //getting the achievement tomato to change
         achievementTomato = findViewById(R.id.tomato1);
+
+        selectedContacts = new ArrayList<>();
 
         // acheive.
         achieve = new AchievementData();
@@ -517,6 +529,10 @@ public class MainScreen extends AppCompatActivity {
     public void selectContacts() {
         List<ContactData> c = getContacts();
 
+        selectedContacts = new ArrayList<>();
+
+        mContactButton.setVisibility(View.VISIBLE);
+
         for (ContactData contact : c) {
             FragmentManager fragmentManager = getFragmentManager();
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
@@ -525,8 +541,20 @@ public class MainScreen extends AppCompatActivity {
             fragmentTransaction.add(R.id.scrolllinearlayout, toSelect, "HELLO");
             fragmentTransaction.commitNow();
             frag.resetButton(contact);
+            selectedContacts.add(frag);
         }
+
         loadingScreen.setVisibility(View.INVISIBLE);
+    }
+
+    public void getMultipleContacts() {
+        for (GetContactsFragment f : selectedContacts) {
+            if (f.isChecked()) {
+                mContacts.add(f.getContact());
+            }
+        }
+        mContactButton.setVisibility(View.INVISIBLE);
+        setMainScreen();
     }
 
     public void sendMessage(Intent messageIntent) {

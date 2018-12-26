@@ -67,6 +67,12 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:text="Get Contact" />
+
+                            <Button
+                                android:id="@+id/get_multiple_contacts"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="finalize contacts" />
                         </LinearLayout>
 
                     </ScrollView>
