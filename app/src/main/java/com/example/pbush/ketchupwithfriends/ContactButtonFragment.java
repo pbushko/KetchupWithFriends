@@ -8,7 +8,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
@@ -32,6 +34,8 @@ public class ContactButtonFragment extends Fragment implements MainScreen.Contac
     private TextView nameText;
     private TextView timeLeftText;
     private ProgressBar progress;
+    private CheckBox toDelete;
+    private ImageView contactImage;
     private int idx;
 
     @Override
@@ -55,6 +59,8 @@ public class ContactButtonFragment extends Fragment implements MainScreen.Contac
                 MainScreen.m.sendMessage(sendIntent);
             }
         });
+        toDelete = v.findViewById(R.id.toDelete);
+        contactImage = v.findViewById(R.id.contact_image);
         return v;
     }
 
@@ -109,6 +115,16 @@ public class ContactButtonFragment extends Fragment implements MainScreen.Contac
     public void setContactTime() {
         this.resetButton(contact, idx);
         return;
+    }
+
+    public void switchToDelete() {
+        toDelete.setVisibility(View.VISIBLE);
+        contactImage.setVisibility(View.INVISIBLE);
+        return;
+    }
+
+    public boolean isChecked() {
+        return toDelete.isChecked();
     }
 
     public Button getButton()

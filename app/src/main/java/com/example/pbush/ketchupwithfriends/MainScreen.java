@@ -11,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Handler;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -21,6 +22,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -74,6 +76,10 @@ public class MainScreen extends AppCompatActivity {
     private static final int MESSAGER_RESULT = 101;
     private int loaded;
     private int saving;
+    private long mTimer;
+    private boolean mHeld;
+
+    private List<ContactButton> mContactFrags;
 
     //firebase items
     private FirebaseAuth mAuth;
@@ -90,6 +96,9 @@ public class MainScreen extends AppCompatActivity {
     private Button mContactButton;
 
     private String userId;
+
+    private Handler mHandler;
+    private Runnable mRunnable;
 
     //the messages and contacts
     private List<MessageData> mMessages;
@@ -132,6 +141,28 @@ public class MainScreen extends AppCompatActivity {
         achievementTomato = findViewById(R.id.tomato1);
 
         selectedContacts = new ArrayList<>();
+
+        mHandler = new Handler();
+        mRunnable = new Runnable() {
+            @Override
+            public void run() {
+                //checking if a button has been held for long enough
+                long time2 = Calendar.getInstance().getTimeInMillis();
+                //Log.d("event", "held " + mTimer);
+                //Log.d("event", "time2 " + time2);
+                if (time2 - mTimer > 800) {
+                    Log.d("event", "held");
+                    mHeld = true;
+                    //putting check boxes on all the contact buttons
+                    for (ContactButton f : mContactFrags) {
+                        f.switchToDelete();
+                    }
+                    //stop the button from being held anymore and take care of it being held
+                    mHandler.removeCallbacks(mRunnable);
+                }
+                mHandler.postDelayed(this, 10);
+            }
+        };
 
         // acheive.
         achieve = new AchievementData();
@@ -485,37 +516,6 @@ public class MainScreen extends AppCompatActivity {
             if (achieve.messageAchievementProgress()){
                 achievementTomato.setImageResource(R.drawable.red_achievement_tomato);
             }
-            //removing contacts to print if they have never been messaged
-            int contactOrigLen = mContacts.size();
-            int[] indxToRem;
-            if (contactOrigLen > 0) {
-                indxToRem = new int[contactOrigLen];
-                //changing the index so that if 0 needs to be removed, it can be
-                indxToRem[0] = -1;
-                int idx = 0;
-                for (int i = 0; i < contactOrigLen; i++)
-                {
-                    /*
-                    if(mContacts.get(i).numMessages() < 100) {
-                        indxToRem[idx++] = i;
-                    }
-                    */
-                }
-                idx--;
-                //if there are any contacts to change at all
-                if (idx >= 0) {
-                    for (int i = contactOrigLen - 1; i > 0; i--) {
-                        if (idx < 0) {
-                            i = 0;
-                        }
-                        else if (indxToRem[idx] == i) {
-                            mContacts.remove(i);
-                            idx--;
-                        }
-                    }
-                }
-            }
-
             //just need this to get the set dates since that's where their
             //contact deadlines get set rn
             for (ContactData contact : mContacts){
@@ -528,7 +528,6 @@ public class MainScreen extends AppCompatActivity {
 
     public void selectContacts() {
         List<ContactData> c = getContacts();
-
         selectedContacts = new ArrayList<>();
 
         mContactButton.setVisibility(View.VISIBLE);
@@ -564,6 +563,7 @@ public class MainScreen extends AppCompatActivity {
     public void writeDataToScreen(){
         //showing the contact data
         if (mContacts != null) {
+            mContactFrags = new ArrayList<>();
             int buttonIndex = 0;
             for (ContactData contact : mContacts) {
                 //make a button that will let you set the time for them
@@ -576,40 +576,61 @@ public class MainScreen extends AppCompatActivity {
                 //setting the info in the button
                 button.resetButton(contact, buttonIndex);
                 //getting the actual button of the fragment
-                Button btn = button.getButton();
-                //btn.setId(num);
+                final Button btn = button.getButton();
                 //on click, we want it to take us to the input time screen
-                btn.setOnClickListener(new View.OnClickListener()
-                {
-                    public void onClick(View view)
-                    {
-                        //the user input button
-                        final FragmentManager fragmentManager = getFragmentManager();
-                        final FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                        final Fragment y = new GetUserInput();
-                        final GetUserInput frag = (GetUserInput)y;
-                        fragmentTransaction.add(button.getLayout(), y, "HELLO");
-                        fragmentTransaction.commitNow();
-                        //setting the info in the button
-                        Button submit = frag.getSubmitButton();
-                        submit.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                int toAdd = frag.getNewContactFreq();
-                                button.getButtonContact().setContactFrequency(toAdd);
-                                button.setContactTime();
-                                //setMainScreen();
-                            }
-                        });
-                        Button cancel = frag.getCancelButton();
-                        cancel.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                               setMainScreen();
-                            }
-                        });
+                btn.setOnTouchListener(new View.OnTouchListener() {
+                    @Override
+                    public boolean onTouch(View v, MotionEvent event) {
+                        switch(event.getAction()) {
+                            case MotionEvent.ACTION_DOWN:
+                                // Start
+                                mHeld = false;
+                                mTimer = Calendar.getInstance().getTimeInMillis();
+                                mHandler.post(mRunnable);
+                                break;
+                            case MotionEvent.ACTION_UP:
+                                // End
+                                if (mHeld) {
+                                    Log.d("event", "held");
+
+                                }
+                                else {
+                                    Log.d("event", "pushed");
+                                    //the user input button
+                                    final FragmentManager fragmentManager = getFragmentManager();
+                                    final FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                                    final Fragment y = new GetUserInput();
+                                    final GetUserInput frag = (GetUserInput)y;
+                                    fragmentTransaction.add(button.getLayout(), y, "HELLO");
+                                    fragmentTransaction.commitNow();
+                                    //setting the info in the button
+                                    Button submit = frag.getSubmitButton();
+                                    submit.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+                                            int toAdd = frag.getNewContactFreq();
+                                            button.getButtonContact().setContactFrequency(toAdd);
+                                            button.setContactTime();
+                                            //setMainScreen();
+                                        }
+                                    });
+                                    Button cancel = frag.getCancelButton();
+                                    cancel.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+                                            setMainScreen();
+                                        }
+                                    });
+                                }
+                                btn.setEnabled(false);
+                                mHeld = false;
+                                mHandler.removeCallbacks(mRunnable);
+                                break;
+                        }
+                        return false;
                     }
                 });
+                mContactFrags.add(button);
             }
         }
         loadingScreen.setVisibility(View.INVISIBLE);
@@ -724,6 +745,8 @@ public class MainScreen extends AppCompatActivity {
         public abstract ContactData getButtonContact();
         public abstract int getIndex();
         public abstract int getLayout();
+        public abstract void switchToDelete();
+        public abstract boolean isChecked();
         public abstract Button getMsgButton();
     }
 
