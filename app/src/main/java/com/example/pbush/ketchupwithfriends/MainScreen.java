@@ -94,6 +94,7 @@ public class MainScreen extends AppCompatActivity {
     private ImageView achievementTomato;
     private List<GetContactsFragment> selectedContacts;
     private Button mContactButton;
+    private Button mDeleteContactsButton;
 
     private String userId;
 
@@ -137,6 +138,9 @@ public class MainScreen extends AppCompatActivity {
         );
         mContactButton.setVisibility(View.INVISIBLE);
 
+        mDeleteContactsButton = findViewById(R.id.delete_contacts_button);
+        mDeleteContactsButton.setVisibility(View.INVISIBLE);
+
         //getting the achievement tomato to change
         achievementTomato = findViewById(R.id.tomato1);
 
@@ -153,6 +157,7 @@ public class MainScreen extends AppCompatActivity {
                 if (time2 - mTimer > 800) {
                     Log.d("event", "held");
                     mHeld = true;
+                    mDeleteContactsButton.setVisibility(View.VISIBLE);
                     //putting check boxes on all the contact buttons
                     for (ContactButton f : mContactFrags) {
                         f.switchToDelete();
@@ -553,6 +558,7 @@ public class MainScreen extends AppCompatActivity {
             }
         }
         mContactButton.setVisibility(View.INVISIBLE);
+        saveInfo();
         setMainScreen();
     }
 
@@ -562,7 +568,7 @@ public class MainScreen extends AppCompatActivity {
 
     public void writeDataToScreen(){
         //showing the contact data
-        if (mContacts != null) {
+        if (mContacts != null && mContacts.size() > 0) {
             mContactFrags = new ArrayList<>();
             int buttonIndex = 0;
             for (ContactData contact : mContacts) {
@@ -633,11 +639,24 @@ public class MainScreen extends AppCompatActivity {
                 mContactFrags.add(button);
             }
         }
+        else if (mContacts != null && mContacts.size() == 0) {
+            selectContacts();
+        }
         loadingScreen.setVisibility(View.INVISIBLE);
         if (loaded == LOADED) {
             saveInfo();
         }
         Log.d("write data to screen", "done writing data");
+    }
+
+    public void deleteContacts(View v) {
+        for (ContactButton c : mContactFrags) {
+            if (c.isChecked()) {
+                mContacts.remove(c.getButtonContact());
+            }
+        }
+        saveInfo();
+        setMainScreen();
     }
 
     //sorts the contacts from most recently messaged to least recently
@@ -691,9 +710,7 @@ public class MainScreen extends AppCompatActivity {
                                 new String[] { id },
                                 null);
 
-                        // let's just get the first email
                         if (cursor.moveToFirst()) {
-                            //email = cursor.getString(forId);
                             String contact = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
                             int nameFieldColumnIndex = cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME);
                             String name = cursor.getString(nameFieldColumnIndex);

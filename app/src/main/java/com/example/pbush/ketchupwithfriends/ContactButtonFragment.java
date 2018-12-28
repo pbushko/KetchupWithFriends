@@ -123,6 +123,12 @@ public class ContactButtonFragment extends Fragment implements MainScreen.Contac
         return;
     }
 
+    public void switchFromDelete() {
+        toDelete.setVisibility(View.INVISIBLE);
+        contactImage.setVisibility(View.VISIBLE);
+        return;
+    }
+
     public boolean isChecked() {
         return toDelete.isChecked();
     }
