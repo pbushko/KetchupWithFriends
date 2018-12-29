@@ -169,9 +169,6 @@ public class MainScreen extends AppCompatActivity {
             }
         };
 
-        // acheive.
-        achieve = new AchievementData();
-        achieve.checkday(Calendar.getInstance().getTimeInMillis());
         writeDataToScreen();
     }
 
@@ -190,6 +187,10 @@ public class MainScreen extends AppCompatActivity {
 
             }
         };
+
+        // acheive.
+        achieve = new AchievementData();
+        achieve.checkday(Calendar.getInstance().getTimeInMillis());
 
         mediaPlayer = MediaPlayer.create(getApplicationContext(), R.raw.free_music);
         mediaPlayer.start();
@@ -242,6 +243,7 @@ public class MainScreen extends AppCompatActivity {
             //only getting the messages that weren't scraped since last opening of the app
 
             int numNewMessages = 0;
+            lastDataScrape = 1;
             for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
                 if (lastTimeStamp > lastDataScrape) {
                     MessageData singleSms = new MessageData();
@@ -253,14 +255,6 @@ public class MainScreen extends AppCompatActivity {
                     lastTimeStamp = singleSms.timestamp;
                     messages.add(singleSms);
                     numNewMessages++;
-
-                    // process new message for achievement if this is not first installation
-                    /* uncomment-kasarn
-                    if (lastDataScrape != 0) {
-                        achieve.update(singleSms, mContacts);
-                        achieve.incrMsg();
-                    }
-                    */
                 }
                 else {
                     cursor.moveToLast();
@@ -275,6 +269,7 @@ public class MainScreen extends AppCompatActivity {
 
         cursor.close();
         lastDataScrape = now;
+        saveInfo();
         return messages;
     }
 
@@ -378,6 +373,21 @@ public class MainScreen extends AppCompatActivity {
                 Log.w("read contacts", "Failed to read value.", error.toException());
             }
         });
+        mDatabaseUserInfo.child("achievements").setValue(achieve);
+        // Read from the database
+        mDatabaseUserInfo.child("achievements").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (saving == SAVING){
+                    saving = DONE_SAVING;
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError error) {
+                // Failed to read value
+                Log.w("read contacts", "Failed to read value.", error.toException());
+            }
+        });
         mDatabaseUserInfo.child("lastDataScrape").setValue(lastDataScrape);
         // Read from the database
         mDatabaseUserInfo.child("lastDataScrape").addValueEventListener(new ValueEventListener() {
@@ -402,7 +412,7 @@ public class MainScreen extends AppCompatActivity {
     public void getSavedInfo()
     {
         mDatabaseUserInfo = mDatabase.getReference(userId);
-        Toast.makeText(this, "Getting save info", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, "Getting save info", Toast.LENGTH_SHORT).show();
         mDatabaseUserInfo.child("contacts").orderByValue();
         mDatabaseUserInfo.child("contacts").addValueEventListener(new ValueEventListener() {
             @Override
@@ -471,7 +481,7 @@ public class MainScreen extends AppCompatActivity {
             }
         });
         Log.d("sign in", "last data scrape: " + lastDataScrape);
-        Toast.makeText(this, "got save info", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, "got save info", Toast.LENGTH_SHORT).show();
     }
 
     public void getNewInfo() {

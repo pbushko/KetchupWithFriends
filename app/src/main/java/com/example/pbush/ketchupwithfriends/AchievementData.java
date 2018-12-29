@@ -17,11 +17,11 @@ public class AchievementData {
     public final static int MS_PER_HOUR = 3600000;
     public final static int MS_PER_DAY = 24 * MS_PER_HOUR;
 
-    public boolean[] nContactAchieve;
-    public boolean[] nMessageAchieve;
-    public boolean[] loginStreakAchieve;
-    public boolean[] deadlineAchieve;
-    public boolean[] messageStreakAchieve;
+    public int nContactAchieve;
+    public int nMessageAchieve;
+    public int loginStreakAchieve;
+    public int deadlineAchieve;
+    public int messageStreakAchieve;
 
 
     public static int[] nContactBench = {10, 20, 30, 40, 50, 60};
@@ -43,24 +43,20 @@ public class AchievementData {
      */
 
     public AchievementData() {
-        nContactAchieve = new boolean[6];
-        nMessageAchieve = new boolean[6];
-        loginStreakAchieve = new boolean[6];
-        deadlineAchieve = new boolean[6];
-        messageStreakAchieve = new boolean[6];
+
 
     }
 
     // increment and check number of contacts added
     public void incrContact() {
         nContacts++;
-        benchTest(nContacts, nContactBench, nContactAchieve);
+        nContactAchieve = benchTest(nContacts, nContactBench, nContactAchieve);
     }
 
     // increment and check number of messages sent
     public void incrMsg() {
         nMessages++;
-        benchTest(nMessages, nMessageBench, nMessageAchieve);
+        nMessageAchieve = benchTest(nMessages, nMessageBench, nMessageAchieve);
     }
 
     public boolean messageAchievementProgress() {
@@ -102,10 +98,17 @@ public class AchievementData {
 
     }
     */
-    // check if new achivement should be given, if so change it and return true
-    // if not return false
-    public boolean benchTest(int score, int[] test, boolean[] achieve) {
-        boolean change  = false;
+    // check if new achivement should be given, if so change it and return the next short
+    // that should be assigned
+    public int benchTest(int score, int[] test, int achieve) {
+        int toRet = achieve;
+        if (test.length < achieve && score >= test[achieve]) {
+            //calling this again so in case more than one benchmark is passed
+            toRet = benchTest(score, test, ++toRet);
+        }
+        return toRet;
+
+        /* Kasarn's old code when achieve was a boolean []
         for (int i = 0; i < test.length; i++) {
             // does the score meet the benchmark
             if (score >= test[i]) {
@@ -118,8 +121,7 @@ public class AchievementData {
                     achieve[i] = true;
                 }
             }
-        }
-        return change;
+        }*/
     }
 
 
