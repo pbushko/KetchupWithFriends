@@ -1,5 +1,6 @@
 package com.example.pbush.ketchupwithfriends;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
@@ -15,6 +16,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.os.AsyncTask;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -38,6 +40,21 @@ public class ContactButtonFragment extends Fragment implements MainScreen.Contac
     private ImageView contactImage;
     private int idx;
 
+    private class RefreshLayout extends AsyncTask<Void, Void, String> {
+        protected void onPreExecute()
+        {
+            resetProgressBar();
+        }
+        protected String doInBackground(Void... params)
+        {
+            return "";
+        }
+
+        protected void onPostExecute(String res) {
+
+        }
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState) {
         /** Inflating the layout for this fragment **/
@@ -50,15 +67,6 @@ public class ContactButtonFragment extends Fragment implements MainScreen.Contac
         progress = (ProgressBar) v.findViewById(R.id.progressBarTimeLeft);
         contactButton = (Button) v.findViewById(R.id.contact_button);
         msgButton = (Button)v.findViewById(R.id.msgButton);
-        msgButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent sendIntent = new Intent(Intent.ACTION_VIEW);
-                sendIntent.setType("vnd.android-dir/mms-sms");
-                sendIntent.putExtra("address", contact.phoneNum.get(0));
-                MainScreen.m.sendMessage(sendIntent);
-            }
-        });
         toDelete = v.findViewById(R.id.toDelete);
         contactImage = v.findViewById(R.id.contact_image);
         return v;
@@ -70,7 +78,11 @@ public class ContactButtonFragment extends Fragment implements MainScreen.Contac
         idx = index;
         contact = c;
         nameText.setText(c.name);
-        long left = c.nextMessageDeadline - Calendar.getInstance().getTimeInMillis();
+        resetProgressBar();
+    }
+
+    public void resetProgressBar() {
+        long left = contact.nextMessageDeadline - Calendar.getInstance().getTimeInMillis();
         if (left <= 0)
         {
             timeLeftText.setText("Message them!!");
@@ -79,28 +91,55 @@ public class ContactButtonFragment extends Fragment implements MainScreen.Contac
         }
         else {
             long days = TimeUnit.MILLISECONDS.toDays(left);
-            long hours, min;
+            long hours = TimeUnit.MILLISECONDS.toHours(left);
+            long min = TimeUnit.MILLISECONDS.toMinutes(left);
+            long sec = TimeUnit.MILLISECONDS.toSeconds(left);
             if (days != 0) {
-                hours = (TimeUnit.MILLISECONDS.toHours(left) / days) % 24;
+                hours = (hours / days) % 24;
                 if (hours != 0) {
-                    min = TimeUnit.MILLISECONDS.toMinutes(left) / days / hours % 60;
+                    min = min / days / hours % 60;
+                    if (min != 0) {
+                        sec = sec / min / hours / days % 60;
+                    }
+                    else {
+                        sec = sec / days % 60;
+                    }
                 }
                 else {
-                    min = TimeUnit.MILLISECONDS.toMinutes(left) / days % 60;
+                    min = min / days % 60;
+                    if (min != 0) {
+                        sec = sec / min / days % 60;
+                    }
+                    else {
+                        sec = sec / days % 60;
+                    }
                 }
             }
             else
             {
-                hours = (TimeUnit.MILLISECONDS.toHours(left)) % 24;
+                hours = hours % 24;
                 if (hours != 0) {
-                    min = TimeUnit.MILLISECONDS.toMinutes(left) / hours % 60;
+                    min = min / hours % 60;
+                    if (min != 0) {
+                        sec = sec / min / hours % 60;
+                    }
+                    else {
+                        sec = sec / hours % 60;
+                    }
                 }
                 else {
-                    min = TimeUnit.MILLISECONDS.toMinutes(left)% 60;
+                    min = min % 60;
+                    if (min != 0) {
+                        sec = sec / min % 60;
+                    }
+                    else {
+                        sec = sec % 60;
+                    }
                 }
             }
-            timeLeftText.setText("Time Left: " + days + "d, " + hours + "h, " + min + "m");
-            long d  = (TimeUnit.HOURS.toMillis((long)c.daysPerDeadline));
+            timeLeftText.setText("Time Left: " + days + "d, " + hours + "h, " + min + "m, " + sec + "s");
+            long d  = (TimeUnit.HOURS.toMillis((long)contact.daysPerDeadline));
+            Log.d("time left", "time left: " + left);
             int p = (int)(100-((left)/(float)d)*100);
             //Log.d("for contact", "left: " + left + " days : " + d + " progress: " + p);
             progress.setProgress(p);

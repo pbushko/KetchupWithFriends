@@ -150,7 +150,7 @@ public class ContactData implements Comparable<ContactData> {
         //if (messages.size() != 0) {
             DateFormat formatter = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss");
             if(nextMessageDeadline == 0)
-                setContactFrequency(5);
+                setContactFrequency(1546499000);
             return "\nName: " + name +
                     "\nPhone number: " + phoneNum.get(0) +
                     //"\nNum Messages: " + messages.size() +

@@ -11,6 +11,8 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
@@ -137,7 +139,6 @@ public class MainScreen extends AppCompatActivity {
             }}
         );
         mContactButton.setVisibility(View.INVISIBLE);
-
         mDeleteContactsButton = findViewById(R.id.delete_contacts_button);
         mDeleteContactsButton.setVisibility(View.INVISIBLE);
 
@@ -243,7 +244,9 @@ public class MainScreen extends AppCompatActivity {
             //only getting the messages that weren't scraped since last opening of the app
 
             int numNewMessages = 0;
-            lastDataScrape = 1;
+            if (lastDataScrape == 0) {
+                lastDataScrape = 1;
+            }
             for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
                 if (lastTimeStamp > lastDataScrape) {
                     MessageData singleSms = new MessageData();
@@ -301,9 +304,6 @@ public class MainScreen extends AppCompatActivity {
             c.name = name;
             c.addPhoneNumber(number);
             contacts.add(c);
-            /* uncomment-kasarn
-            achieve.incrContact();
-            */
         }
 
         cursor.close();
@@ -358,14 +358,25 @@ public class MainScreen extends AppCompatActivity {
     {
         mDatabaseUserInfo = mDatabase.getReference(userId);
         saving = SAVING;
-        mDatabaseUserInfo.child("contacts").setValue(mContacts);
-        // Read from the database
         mDatabaseUserInfo.child("contacts").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (saving == SAVING){
                     saving = DONE_SAVING;
                 }
+            }
+            @Override
+            public void onCancelled(DatabaseError error) {
+                // Failed to read value
+                Log.w("read contacts", "Failed to read value.", error.toException());
+            }
+        });
+        mDatabaseUserInfo.child("contacts").setValue(mContacts);
+        // Read from the database
+        mDatabaseUserInfo.child("achievements").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
             }
             @Override
             public void onCancelled(DatabaseError error) {
@@ -374,31 +385,13 @@ public class MainScreen extends AppCompatActivity {
             }
         });
         mDatabaseUserInfo.child("achievements").setValue(achieve);
-        // Read from the database
-        mDatabaseUserInfo.child("achievements").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (saving == SAVING){
-                    saving = DONE_SAVING;
-                }
-            }
-            @Override
-            public void onCancelled(DatabaseError error) {
-                // Failed to read value
-                Log.w("read contacts", "Failed to read value.", error.toException());
-            }
-        });
-        mDatabaseUserInfo.child("lastDataScrape").setValue(lastDataScrape);
-        // Read from the database
+
         mDatabaseUserInfo.child("lastDataScrape").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 // This method is called once with the initial value and again
                 // whenever data at this location is updated.
-                for (DataSnapshot snap : dataSnapshot.getChildren()){
-                    lastDataScrape = snap.getValue(Long.class);
-                    Log.d("save data", "saved last data scrape time! it was: " + lastDataScrape);
-                }
+                Log.d("save data", "saved last data scrape time! it was: " + lastDataScrape);
                 Log.d("save data", "outside the scrape function");
             }
             @Override
@@ -407,6 +400,7 @@ public class MainScreen extends AppCompatActivity {
                 Log.w("read contacts", "Failed to read value.", error.toException());
             }
         });
+        mDatabaseUserInfo.child("lastDataScrape").setValue(lastDataScrape);
     }
 
     public void getSavedInfo()
@@ -414,17 +408,15 @@ public class MainScreen extends AppCompatActivity {
         mDatabaseUserInfo = mDatabase.getReference(userId);
         //Toast.makeText(this, "Getting save info", Toast.LENGTH_SHORT).show();
         mDatabaseUserInfo.child("contacts").orderByValue();
-        mDatabaseUserInfo.child("contacts").addValueEventListener(new ValueEventListener() {
+        mDatabaseUserInfo.child("contacts").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (saving == DONE_SAVING) {
                     // This method is called once with the initial value and again
                     // whenever data at this location is updated.
-
                     mContacts = new ArrayList<ContactData>();
                     for (DataSnapshot snap : dataSnapshot.getChildren()) {
                         mContacts.add(snap.getValue(ContactData.class));
-                        //Log.d("read contacts", "contact: " + mContacts.get(0));
                     }
                     //if there are no saved contacts, get the user to pick them
                     Log.d("sign in", "outside the read contacts function");
@@ -455,10 +447,7 @@ public class MainScreen extends AppCompatActivity {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
-                for (DataSnapshot snap : dataSnapshot.getChildren()){
-                    lastDataScrape = snap.getValue(Long.class);
-                    Log.d("sign in", "last data scrape time! it was: " + lastDataScrape);
-                }
+                lastDataScrape = dataSnapshot.getValue(Long.class);
 
                 Log.d("sign in", "outside the scrape function");
                 if(loaded == LOADED) {
@@ -467,7 +456,7 @@ public class MainScreen extends AppCompatActivity {
                         selectContacts();
                     }
                     else {
-                        getNewInfo();
+                        //getNewInfo();
                         setMainScreen();
                     }
                     loaded = LOADING;
@@ -480,13 +469,13 @@ public class MainScreen extends AppCompatActivity {
                 Log.w("read contacts", "Failed to read value.", databaseError.toException());
             }
         });
-        Log.d("sign in", "last data scrape: " + lastDataScrape);
+        mDatabaseUserInfo.child("lastDataScrape").orderByValue();
         //Toast.makeText(this, "got save info", Toast.LENGTH_SHORT).show();
     }
 
     public void getNewInfo() {
         Toast.makeText(this, "Getting new info", Toast.LENGTH_SHORT).show();
-        Log.d("sign in", "last data scrape: " + lastDataScrape);
+        Log.d("getNewInfo", "last data scrape: " + lastDataScrape);
         //getting permission from the user to access message and contact data
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.READ_CONTACTS)
@@ -572,8 +561,18 @@ public class MainScreen extends AppCompatActivity {
         setMainScreen();
     }
 
-    public void sendMessage(Intent messageIntent) {
-        startActivityForResult(messageIntent, MESSAGER_RESULT);
+    public void sendMessage(String num) {
+        /*
+        Intent contactPickerIntent = new Intent(Intent.ACTION_PICK,
+                Contacts.CONTENT_URI);
+        contactPickerIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivityForResult(contactPickerIntent, CONTACT_PICKER_RESULT);
+        */
+        Intent sendIntent = new Intent(Intent.ACTION_VIEW);
+        sendIntent.setType("vnd.android-dir/mms-sms");
+        sendIntent.putExtra("address", num);
+        sendIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivityForResult(sendIntent, MESSAGER_RESULT);
     }
 
     public void writeDataToScreen(){
@@ -581,7 +580,7 @@ public class MainScreen extends AppCompatActivity {
         if (mContacts != null && mContacts.size() > 0) {
             mContactFrags = new ArrayList<>();
             int buttonIndex = 0;
-            for (ContactData contact : mContacts) {
+            for (final ContactData contact : mContacts) {
                 //make a button that will let you set the time for them
                 FragmentManager fragmentManager = getFragmentManager();
                 FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
@@ -593,7 +592,42 @@ public class MainScreen extends AppCompatActivity {
                 button.resetButton(contact, buttonIndex);
                 //getting the actual button of the fragment
                 final Button btn = button.getButton();
+                final int index = buttonIndex;
                 //on click, we want it to take us to the input time screen
+                btn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        setContactScreen(index);
+                        /*
+                        final FragmentManager fragmentManager = getFragmentManager();
+                        final FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                        final Fragment y = new GetUserInput();
+                        final GetUserInput frag = (GetUserInput)y;
+                        fragmentTransaction.add(button.getLayout(), y, "HELLO");
+                        fragmentTransaction.commitNow();
+                        //setting the info in the button
+                        Button submit = frag.getSubmitButton();
+                        submit.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                int toAdd = frag.getNewContactFreq();
+                                button.getButtonContact().setContactFrequency(toAdd);
+                                button.setContactTime();
+                                for (ContactData cd : mContacts) {
+                                    Log.d("contact", "" + cd.toString());
+                                }
+                            }
+                        });
+                        Button cancel = frag.getCancelButton();
+                        cancel.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                setMainScreen();
+                            }
+                        });*/
+                    }
+                });
+                /*
                 btn.setOnTouchListener(new View.OnTouchListener() {
                     @Override
                     public boolean onTouch(View v, MotionEvent event) {
@@ -608,7 +642,6 @@ public class MainScreen extends AppCompatActivity {
                                 // End
                                 if (mHeld) {
                                     Log.d("event", "held");
-
                                 }
                                 else {
                                     Log.d("event", "pushed");
@@ -627,6 +660,7 @@ public class MainScreen extends AppCompatActivity {
                                             int toAdd = frag.getNewContactFreq();
                                             button.getButtonContact().setContactFrequency(toAdd);
                                             button.setContactTime();
+                                            Log.d("contact", "" + button.getButtonContact().toString());
                                             //setMainScreen();
                                         }
                                     });
@@ -645,8 +679,22 @@ public class MainScreen extends AppCompatActivity {
                         }
                         return false;
                     }
+
+
+                    public boolean performClick() {
+                        return true;
+                    }
+                });
+                */
+                Button msgButton = button.getMsgButton();
+                msgButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        sendMessage(button.getButtonContact().phoneNum.get(0));
+                    }
                 });
                 mContactFrags.add(button);
+                buttonIndex++;
             }
         }
         else if (mContacts != null && mContacts.size() == 0) {
@@ -654,9 +702,39 @@ public class MainScreen extends AppCompatActivity {
         }
         loadingScreen.setVisibility(View.INVISIBLE);
         if (loaded == LOADED) {
+            Log.d("saving","saved!");
             saveInfo();
         }
         Log.d("write data to screen", "done writing data");
+    }
+
+    public void setContactScreen(final int idx) {
+        ContactData c = mContacts.get(idx);
+        setContentView(R.layout.contact_data_screen);
+
+        TextView name = (TextView) findViewById(R.id.contact_name);
+        name.setText(c.name);
+
+        Button submit = findViewById(R.id.ok_button);
+        submit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //int toAdd = frag.getNewContactFreq();
+                int toAdd = 10;
+                mContacts.get(idx).setContactFrequency(toAdd);
+                for (ContactData cd : mContacts) {
+                    Log.d("contact", "" + cd.toString());
+                }
+                saveInfo();
+            }
+        });
+        Button cancel = findViewById(R.id.cancel_button);
+        cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setMainScreen();
+            }
+        });
     }
 
     public void deleteContacts(View v) {
@@ -756,11 +834,17 @@ public class MainScreen extends AppCompatActivity {
                     }
                     break;
                 case MESSAGER_RESULT:
+                    Log.d("new message", "new message!");
                     getNewInfo();
                     writeDataToScreen();
                     break;
             }
         } else {
+            if (requestCode == MESSAGER_RESULT) {
+                Log.d("new message", "new message!");
+                getNewInfo();
+                writeDataToScreen();
+            }
             Log.w(DEBUG_TAG, "Warning: activity result not ok");
         }
     }
@@ -771,6 +855,7 @@ public class MainScreen extends AppCompatActivity {
         public abstract void setContactTime();
         public abstract ContactData getButtonContact();
         public abstract int getIndex();
+        public abstract void resetProgressBar();
         public abstract int getLayout();
         public abstract void switchToDelete();
         public abstract boolean isChecked();
