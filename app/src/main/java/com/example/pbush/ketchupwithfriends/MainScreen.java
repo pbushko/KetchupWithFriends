@@ -1,6 +1,7 @@
 package com.example.pbush.ketchupwithfriends;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
@@ -241,12 +242,9 @@ public class MainScreen extends AppCompatActivity {
         try
         {
             long lastTimeStamp = now + 1;
-            //only getting the messages that weren't scraped since last opening of the app
+            //only getting the messages that weren't scraped since last time
 
             int numNewMessages = 0;
-            if (lastDataScrape == 0) {
-                lastDataScrape = 1;
-            }
             for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
                 if (lastTimeStamp > lastDataScrape) {
                     MessageData singleSms = new MessageData();
@@ -256,8 +254,11 @@ public class MainScreen extends AppCompatActivity {
                     singleSms.phoneNum = formatPhoneNumber(temp);
                     singleSms.timestamp = cursor.getLong(cursor.getColumnIndexOrThrow("date"));
                     lastTimeStamp = singleSms.timestamp;
-                    messages.add(singleSms);
-                    numNewMessages++;
+                    //in case the last message is old
+                    if (lastTimeStamp < lastDataScrape) {
+                        messages.add(singleSms);
+                        numNewMessages++;
+                    }
                 }
                 else {
                     cursor.moveToLast();
@@ -272,41 +273,63 @@ public class MainScreen extends AppCompatActivity {
 
         cursor.close();
         lastDataScrape = now;
-        saveInfo();
         return messages;
     }
 
     public List<ContactData> getContacts()
     {
         List<ContactData> contacts = new ArrayList<ContactData>();
-        ContentResolver cr = this.getContentResolver();
-        Cursor cursor = cr.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
-        for(cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext())
-        {
-            String id = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
-            int nameFieldColumnIndex = cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME);
-            String name = cursor.getString(nameFieldColumnIndex);
-            String number = "";
-            //getting the phone number for everyone
-            if (Integer.parseInt(cursor.getString(cursor.getColumnIndex(
-                    ContactsContract.Contacts.HAS_PHONE_NUMBER))) > 0) {
-                Cursor phoneCursor = cr.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                        null,
-                        ContactsContract.CommonDataKinds.Phone.CONTACT_ID +" = ?",
-                        new String[]{id}, null);
-                phoneCursor.moveToNext();
-                int numberFieldColumnIndex = phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
-                number = formatPhoneNumber(phoneCursor.getString(numberFieldColumnIndex));
-                phoneCursor.close();
-            }
-            ContactData c = new ContactData();
-            c.id = id;
-            c.name = name;
-            c.addPhoneNumber(number);
-            contacts.add(c);
-        }
+        if (ContextCompat.checkSelfPermission(this,
 
-        cursor.close();
+                Manifest.permission.READ_CONTACTS)
+                != PackageManager.PERMISSION_GRANTED)
+        {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.READ_CONTACTS},
+                    1);
+            return getContacts();
+        }
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_SMS)
+                != PackageManager.PERMISSION_GRANTED)
+        {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.READ_SMS},
+                    2);
+            return getContacts();
+        }
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_CONTACTS)
+                == PackageManager.PERMISSION_GRANTED) {
+
+            ContentResolver cr = this.getContentResolver();
+            Cursor cursor = cr.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
+            for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
+                String id = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
+                int nameFieldColumnIndex = cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME);
+                String name = cursor.getString(nameFieldColumnIndex);
+                String number = "";
+                //getting the phone number for everyone
+                if (Integer.parseInt(cursor.getString(cursor.getColumnIndex(
+                        ContactsContract.Contacts.HAS_PHONE_NUMBER))) > 0) {
+                    Cursor phoneCursor = cr.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                            null,
+                            ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
+                            new String[]{id}, null);
+                    phoneCursor.moveToNext();
+                    int numberFieldColumnIndex = phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
+                    number = formatPhoneNumber(phoneCursor.getString(numberFieldColumnIndex));
+                    phoneCursor.close();
+                }
+                ContactData c = new ContactData();
+                c.id = id;
+                c.name = name;
+                c.addPhoneNumber(number);
+                contacts.add(c);
+            }
+
+            cursor.close();
+        }
 
         return contacts;
     }
@@ -315,7 +338,7 @@ public class MainScreen extends AppCompatActivity {
     {
         return number.replace("-", "").replace("+", "")
                 .replace(" ", "").replace(")", "")
-                .replace("(", "");
+                .replace("(", "").replace("\"", "");
     }
 
     @Override
@@ -372,34 +395,7 @@ public class MainScreen extends AppCompatActivity {
             }
         });
         mDatabaseUserInfo.child("contacts").setValue(mContacts);
-        // Read from the database
-        mDatabaseUserInfo.child("achievements").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-
-            }
-            @Override
-            public void onCancelled(DatabaseError error) {
-                // Failed to read value
-                Log.w("read contacts", "Failed to read value.", error.toException());
-            }
-        });
         mDatabaseUserInfo.child("achievements").setValue(achieve);
-
-        mDatabaseUserInfo.child("lastDataScrape").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                // This method is called once with the initial value and again
-                // whenever data at this location is updated.
-                Log.d("save data", "saved last data scrape time! it was: " + lastDataScrape);
-                Log.d("save data", "outside the scrape function");
-            }
-            @Override
-            public void onCancelled(DatabaseError error) {
-                // Failed to read value
-                Log.w("read contacts", "Failed to read value.", error.toException());
-            }
-        });
         mDatabaseUserInfo.child("lastDataScrape").setValue(lastDataScrape);
     }
 
@@ -447,9 +443,13 @@ public class MainScreen extends AppCompatActivity {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
-                lastDataScrape = dataSnapshot.getValue(Long.class);
-
-                Log.d("sign in", "outside the scrape function");
+                try {
+                    lastDataScrape = dataSnapshot.getValue(Long.class);
+                    Log.d("sign in", "outside the scrape function");
+                }
+                catch (Exception e) {
+                    lastDataScrape = 0;
+                }
                 if(loaded == LOADED) {
                     if (mContacts.size() == 0)
                     {
@@ -528,6 +528,7 @@ public class MainScreen extends AppCompatActivity {
             sortContacts();
         }
         Toast.makeText(this, "Got new info", Toast.LENGTH_SHORT).show();
+        saveInfo();
     }
 
     public void selectContacts() {
@@ -562,19 +563,12 @@ public class MainScreen extends AppCompatActivity {
     }
 
     public void sendMessage(String num) {
-        /*
-        Intent contactPickerIntent = new Intent(Intent.ACTION_PICK,
-                Contacts.CONTENT_URI);
-        contactPickerIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivityForResult(contactPickerIntent, CONTACT_PICKER_RESULT);
-        */
-        Intent sendIntent = new Intent(Intent.ACTION_VIEW);
-        sendIntent.setType("vnd.android-dir/mms-sms");
-        sendIntent.putExtra("address", num);
+        Intent sendIntent = new Intent(Intent.ACTION_VIEW, Uri.fromParts("sms", num, null));
         sendIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivityForResult(sendIntent, MESSAGER_RESULT);
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     public void writeDataToScreen(){
         //showing the contact data
         if (mContacts != null && mContacts.size() > 0) {
@@ -593,41 +587,8 @@ public class MainScreen extends AppCompatActivity {
                 //getting the actual button of the fragment
                 final Button btn = button.getButton();
                 final int index = buttonIndex;
+
                 //on click, we want it to take us to the input time screen
-                btn.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        setContactScreen(index);
-                        /*
-                        final FragmentManager fragmentManager = getFragmentManager();
-                        final FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                        final Fragment y = new GetUserInput();
-                        final GetUserInput frag = (GetUserInput)y;
-                        fragmentTransaction.add(button.getLayout(), y, "HELLO");
-                        fragmentTransaction.commitNow();
-                        //setting the info in the button
-                        Button submit = frag.getSubmitButton();
-                        submit.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                int toAdd = frag.getNewContactFreq();
-                                button.getButtonContact().setContactFrequency(toAdd);
-                                button.setContactTime();
-                                for (ContactData cd : mContacts) {
-                                    Log.d("contact", "" + cd.toString());
-                                }
-                            }
-                        });
-                        Button cancel = frag.getCancelButton();
-                        cancel.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                setMainScreen();
-                            }
-                        });*/
-                    }
-                });
-                /*
                 btn.setOnTouchListener(new View.OnTouchListener() {
                     @Override
                     public boolean onTouch(View v, MotionEvent event) {
@@ -646,46 +607,19 @@ public class MainScreen extends AppCompatActivity {
                                 else {
                                     Log.d("event", "pushed");
                                     //the user input button
-                                    final FragmentManager fragmentManager = getFragmentManager();
-                                    final FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                                    final Fragment y = new GetUserInput();
-                                    final GetUserInput frag = (GetUserInput)y;
-                                    fragmentTransaction.add(button.getLayout(), y, "HELLO");
-                                    fragmentTransaction.commitNow();
-                                    //setting the info in the button
-                                    Button submit = frag.getSubmitButton();
-                                    submit.setOnClickListener(new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View v) {
-                                            int toAdd = frag.getNewContactFreq();
-                                            button.getButtonContact().setContactFrequency(toAdd);
-                                            button.setContactTime();
-                                            Log.d("contact", "" + button.getButtonContact().toString());
-                                            //setMainScreen();
-                                        }
-                                    });
-                                    Button cancel = frag.getCancelButton();
-                                    cancel.setOnClickListener(new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View v) {
-                                            setMainScreen();
-                                        }
-                                    });
+                                    setContactScreen(index);
                                 }
                                 btn.setEnabled(false);
                                 mHeld = false;
                                 mHandler.removeCallbacks(mRunnable);
                                 break;
+                            default:
+                                break;
                         }
-                        return false;
-                    }
-
-
-                    public boolean performClick() {
                         return true;
                     }
                 });
-                */
+
                 Button msgButton = button.getMsgButton();
                 msgButton.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -714,18 +648,55 @@ public class MainScreen extends AppCompatActivity {
 
         TextView name = (TextView) findViewById(R.id.contact_name);
         name.setText(c.name);
+        final Spinner spinner = (Spinner)findViewById(R.id.time_option_spinner);
+        final EditText num = (EditText) findViewById(R.id.user_num_input);
+        num.setTransformationMethod(null);
+        // Create an ArrayAdapter using the string array and a default spinner
+        ArrayAdapter<CharSequence> staticAdapter = ArrayAdapter
+                .createFromResource(this, R.array.time_options_array,
+                        android.R.layout.simple_spinner_item);
+        // Specify the layout to use when the list of choices appears
+        staticAdapter
+                .setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        // Apply the adapter to the spinner
+        spinner.setAdapter(staticAdapter);
 
         Button submit = findViewById(R.id.ok_button);
         submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //int toAdd = frag.getNewContactFreq();
-                int toAdd = 10;
-                mContacts.get(idx).setContactFrequency(toAdd);
-                for (ContactData cd : mContacts) {
-                    Log.d("contact", "" + cd.toString());
+                int multiplier = 1;
+                switch (spinner.getSelectedItem().toString())
+                {
+                    case("Hour"):
+                        multiplier = 1;
+                        break;
+                    case("Day"):
+                        multiplier = 24;
+                        break;
+                    case("Week"):
+                        multiplier = 7*24;
+                        break;
+                    // NOT IMPLEMENTED RIGHT NOW
+                    case("Month"):
+                        multiplier = 1;
+                        break;
+                    default:
+                        multiplier = 1;
+                        break;
                 }
-                saveInfo();
+                try {
+                    int toAdd = Integer.parseInt(num.getText().toString()) * multiplier;
+                    mContacts.get(idx).setContactFrequency(toAdd);
+                    for (ContactData cd : mContacts) {
+                        Log.d("contact", "" + cd.toString());
+                    }
+                    saveInfo();
+                }
+                catch (Exception e) {
+                    Toast.makeText(MainScreen.this, "Enter a number!", Toast.LENGTH_SHORT).show();
+                }
             }
         });
         Button cancel = findViewById(R.id.cancel_button);
@@ -836,14 +807,14 @@ public class MainScreen extends AppCompatActivity {
                 case MESSAGER_RESULT:
                     Log.d("new message", "new message!");
                     getNewInfo();
-                    writeDataToScreen();
+                    setMainScreen();
                     break;
             }
         } else {
             if (requestCode == MESSAGER_RESULT) {
                 Log.d("new message", "new message!");
                 getNewInfo();
-                writeDataToScreen();
+                setMainScreen();
             }
             Log.w(DEBUG_TAG, "Warning: activity result not ok");
         }
