@@ -577,7 +577,7 @@ public class MainScreen extends AppCompatActivity {
             for (final ContactData contact : mContacts) {
                 //make a button that will let you set the time for them
                 FragmentManager fragmentManager = getFragmentManager();
-                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                final FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
                 Fragment c = new ContactButtonFragment();
                 final ContactButton button = (ContactButton)c;
                 fragmentTransaction.add(R.id.scrolllinearlayout, c, "HELLO");
@@ -624,7 +624,26 @@ public class MainScreen extends AppCompatActivity {
                 msgButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        sendMessage(button.getButtonContact().phoneNum.get(0));
+                        if (ContextCompat.checkSelfPermission(MainScreen.this,
+                                Manifest.permission.SEND_SMS)
+                                != PackageManager.PERMISSION_GRANTED) {
+                            if (ActivityCompat.shouldShowRequestPermissionRationale(MainScreen.this,
+                                    Manifest.permission.SEND_SMS)) {
+
+                            } else {
+                                ActivityCompat.requestPermissions(MainScreen.this,
+                                        new String[]{Manifest.permission.SEND_SMS},
+                                        3);
+                            }
+                        }
+                        //sendMessage(button.getButtonContact().phoneNum.get(0));
+                        FragmentManager fragmentManager = getFragmentManager();
+                        final FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                        Fragment m = new MessagingFragment();
+                        final MessageFragment msg = (MessageFragment)m;
+                        fragmentTransaction.add(R.id.scrolllinearlayout, m, "HELLO");
+                        fragmentTransaction.commitNow();
+                        msg.resetData(contact);
                     }
                 });
                 mContactFrags.add(button);
@@ -837,6 +856,10 @@ public class MainScreen extends AppCompatActivity {
         public abstract int getNewContactFreq();
         public abstract Button getSubmitButton();
         public abstract Button getCancelButton();
+    }
+
+    public interface MessageFragment {
+        public abstract void resetData(ContactData c);
     }
 
     public interface GetContactsFragment{
