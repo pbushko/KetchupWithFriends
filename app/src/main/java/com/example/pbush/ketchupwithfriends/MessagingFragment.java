@@ -17,6 +17,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.Calendar;
+
 /**
  * Created by pbush on 1/7/2019.
  */
@@ -55,18 +57,24 @@ public class MessagingFragment extends Fragment implements MainScreen.MessageFra
         if (contact != null) {
             String msg = msgText.getText().toString();
 
-            try {
-                //Getting intent and PendingIntent instance
-                Intent intent=new Intent(getContext(),MessagingFragment.class);
-                PendingIntent pi=PendingIntent.getActivity(getContext(), 0, intent,0);
+            if (msg != "" || msg != null) {
+                try {
+                    //Getting intent and PendingIntent instance
+                    Intent intent = new Intent(getContext(), MessagingFragment.class);
+                    PendingIntent pi = PendingIntent.getActivity(getContext(), 0, intent, 0);
 
-                //Get the SmsManager instance and call the sendTextMessage method to send message
-                SmsManager sms=SmsManager.getDefault();
-                sms.sendTextMessage(contact.phoneNum.get(0), null, msg, pi,null);
-                Log.i("Finished sending SMS...", "");
-            } catch (android.content.ActivityNotFoundException ex) {
-                Toast.makeText(getActivity(),
-                        "SMS faild, please try again later.", Toast.LENGTH_SHORT).show();
+                    //Get the SmsManager instance and call the sendTextMessage method to send message
+                    SmsManager sms = SmsManager.getDefault();
+                    sms.sendTextMessage(contact.phoneNum.get(0), null, msg, pi, null);
+                    Log.i("Finished sending SMS...", "");
+                    MessageData m = new MessageData();
+                    m.timestamp = Calendar.getInstance().getTimeInMillis();
+                    contact.addMessage(m);
+                    MainScreen.m.setMainScreen();
+                } catch (android.content.ActivityNotFoundException ex) {
+                    Toast.makeText(getActivity(),
+                            "SMS failed, please try again later.", Toast.LENGTH_SHORT).show();
+                }
             }
         }
     }

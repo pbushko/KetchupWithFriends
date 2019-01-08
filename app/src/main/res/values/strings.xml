@@ -7,6 +7,12 @@
 
     <color name="peach_puff">#FFDAB9</color>
 
+    <string-array name="graph_sort_times">
+        <item>Week</item>
+        <item>Month</item>
+        <item>Year</item>
+    </string-array>
+
     <!-- Strings related to Settings -->
 
     <!-- Example General settings -->

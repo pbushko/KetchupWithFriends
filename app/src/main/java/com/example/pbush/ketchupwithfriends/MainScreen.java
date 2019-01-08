@@ -10,6 +10,7 @@ import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -27,6 +28,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -53,7 +55,16 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.jjoe64.graphview.DefaultLabelFormatter;
+import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.ValueDependentColor;
+import com.jjoe64.graphview.helper.DateAsXAxisLabelFormatter;
+import com.jjoe64.graphview.series.BarGraphSeries;
+import com.jjoe64.graphview.series.DataPoint;
+import com.jjoe64.graphview.series.LineGraphSeries;
+import com.jjoe64.graphview.series.Series;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -81,6 +92,7 @@ public class MainScreen extends AppCompatActivity {
     private int saving;
     private long mTimer;
     private boolean mHeld;
+    private boolean mFirstLoading;
 
     private List<ContactButton> mContactFrags;
 
@@ -99,6 +111,8 @@ public class MainScreen extends AppCompatActivity {
     private Button mContactButton;
     private Button mDeleteContactsButton;
 
+    private GraphView mContactGraph;
+
     private String userId;
 
     private Handler mHandler;
@@ -108,7 +122,7 @@ public class MainScreen extends AppCompatActivity {
     private List<MessageData> mMessages;
     private List<ContactData> mContacts;
 
-    private void setMainScreen()
+    public void setMainScreen()
     {
         setContentView(R.layout.activity_main_screen);
         loadingScreen = findViewById(R.id.loadingScreen);
@@ -254,8 +268,9 @@ public class MainScreen extends AppCompatActivity {
                     singleSms.phoneNum = formatPhoneNumber(temp);
                     singleSms.timestamp = cursor.getLong(cursor.getColumnIndexOrThrow("date"));
                     lastTimeStamp = singleSms.timestamp;
-                    //in case the last message is old
-                    if (lastTimeStamp < lastDataScrape) {
+                    //only getting the new messages
+                    Log.d("times", "lastTimeStamp = " + lastTimeStamp + " lastDataScrape = " + lastDataScrape);
+                    if (lastTimeStamp > lastDataScrape) {
                         messages.add(singleSms);
                         numNewMessages++;
                     }
@@ -552,12 +567,28 @@ public class MainScreen extends AppCompatActivity {
     }
 
     public void getMultipleContacts() {
+        mContacts = new ArrayList<ContactData>();
         for (GetContactsFragment f : selectedContacts) {
             if (f.isChecked()) {
                 mContacts.add(f.getContact());
             }
         }
         mContactButton.setVisibility(View.INVISIBLE);
+        lastDataScrape = 0;
+        mMessages = getSentMessages();
+        //sorting the messages by number and showing them
+        for (int i = mMessages.size() - 1; i >= 0; i--)
+        {
+            MessageData message = mMessages.get(i);
+            //checking if the phone number already is in a contactData obj
+            //this will be fixed later when we just get data from contacts
+            for (ContactData contact : mContacts)
+            {
+                if(contact.phoneNum.get(0).compareTo(formatPhoneNum(message.phoneNum)) == 0) {
+                    contact.addOldMessage(message);
+                }
+            }
+        }
         saveInfo();
         setMainScreen();
     }
@@ -607,7 +638,7 @@ public class MainScreen extends AppCompatActivity {
                                 else {
                                     Log.d("event", "pushed");
                                     //the user input button
-                                    setContactScreen(index);
+                                    setContactScreen(index, "Week");
                                 }
                                 btn.setEnabled(false);
                                 mHeld = false;
@@ -661,12 +692,104 @@ public class MainScreen extends AppCompatActivity {
         Log.d("write data to screen", "done writing data");
     }
 
-    public void setContactScreen(final int idx) {
+    public void setContactScreen(final int idx, String graphSpinnerString) {
+        mFirstLoading = true;
         ContactData c = mContacts.get(idx);
         setContentView(R.layout.contact_data_screen);
 
         TextView name = (TextView) findViewById(R.id.contact_name);
         name.setText(c.name);
+        final Spinner graphSpinner = (Spinner) findViewById(R.id.graph_sorting);
+        mContactGraph = findViewById(R.id.graph);
+        mContactGraph.getGridLabelRenderer().setLabelFormatter(new DateAsXAxisLabelFormatter(this));
+        ArrayList<DataPoint> dps = c.getGraphPoints();
+        BarGraphSeries<DataPoint> s = c.getBarGraphPoints();
+        graphSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                //this gets called on initialization as well
+                if (!mFirstLoading) {
+                    setContactScreen(idx, graphSpinner.toString());
+                }
+                else {
+                    mFirstLoading = false;
+                }
+            }
+
+            public void onNothingSelected(AdapterView<?> adapterView) {
+                return;
+            }
+        });
+        mContactGraph.getGridLabelRenderer().setNumHorizontalLabels(7);
+        SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
+        Calendar cal = Calendar.getInstance();
+        Date today = cal.getTime();
+        Date last = cal.getTime();
+        try {
+            String now = fmt.format(new Date(cal.getTimeInMillis()));
+            today = fmt.parse(now);
+            //formatting for week
+            cal.add(Calendar.DAY_OF_YEAR, -6);
+            last = fmt.parse(fmt.format(new Date(cal.getTimeInMillis())));
+        }
+        catch (ParseException e) {
+
+        }
+
+        s.setSpacing(30);
+        // styling
+        s.setValueDependentColor(new ValueDependentColor<DataPoint>() {
+            @Override
+            public int get(DataPoint data) {
+                return Color.rgb((int) data.getX()*255/4, (int) Math.abs(data.getY()*255/6), 100);
+            }
+        });
+        s.setDrawValuesOnTop(true);
+        s.setValuesOnTopColor(Color.RED);
+        //s.setDrawDataPoints(true);
+        mContactGraph.addSeries(s);
+        mContactGraph.getGridLabelRenderer().setHumanRounding(false);
+        mContactGraph.getViewport().setMinX(last.getTime());
+        mContactGraph.getViewport().setMaxX(today.getTime());
+        mContactGraph.getViewport().setXAxisBoundsManual(true);
+        mContactGraph.getGridLabelRenderer().setLabelFormatter(new DefaultLabelFormatter() {
+            @Override
+            public String formatLabel(double value, boolean isValueX) {
+                if (isValueX) {
+                    // show new x depending on the day
+                    Log.d("value", "" + value);
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTime(new Date((long)value));
+                    String dow = "";
+                    switch(calendar.get(Calendar.DAY_OF_WEEK)) {
+                        case (Calendar.SUNDAY):
+                            dow = "Su";
+                            break;
+                        case (Calendar.MONDAY):
+                            dow = "M";
+                            break;
+                        case (Calendar.TUESDAY):
+                            dow = "T";
+                            break;
+                        case (Calendar.WEDNESDAY):
+                            dow = "W";
+                            break;
+                        case (Calendar.THURSDAY):
+                            dow = "Th";
+                            break;
+                        case (Calendar.FRIDAY):
+                            dow = "F";
+                            break;
+                        default:
+                            dow = "Sa";
+                            break;
+                    }
+                    return dow;
+                } else {
+                    // show currency for y values
+                    return super.formatLabel(value, isValueX);
+                }
+            }
+        });
         final Spinner spinner = (Spinner)findViewById(R.id.time_option_spinner);
         final EditText num = (EditText) findViewById(R.id.user_num_input);
         num.setTransformationMethod(null);
@@ -677,7 +800,6 @@ public class MainScreen extends AppCompatActivity {
         // Specify the layout to use when the list of choices appears
         staticAdapter
                 .setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
         // Apply the adapter to the spinner
         spinner.setAdapter(staticAdapter);
 
@@ -725,6 +847,10 @@ public class MainScreen extends AppCompatActivity {
                 setMainScreen();
             }
         });
+    }
+
+    private void setGraphView(GraphView g, Spinner s) {
+
     }
 
     public void deleteContacts(View v) {

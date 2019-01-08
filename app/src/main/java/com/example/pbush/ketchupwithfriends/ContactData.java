@@ -1,5 +1,7 @@
 package com.example.pbush.ketchupwithfriends;
 
+import android.icu.text.SymbolTable;
+import android.provider.ContactsContract;
 import android.util.Log;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -9,13 +11,23 @@ import android.provider.ContactsContract.Contacts;
 import android.content.Context;
 
 
+import com.jjoe64.graphview.series.BarGraphSeries;
+import com.jjoe64.graphview.series.DataPoint;
+import com.jjoe64.graphview.series.LineGraphSeries;
+
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Dictionary;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Calendar;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.io.ByteArrayInputStream;
+import java.util.Map;
 
 
 /**
@@ -39,6 +51,9 @@ public class ContactData implements Comparable<ContactData> {
     /* profile picture */
     public ByteArrayInputStream pic;
 
+    //concurrent lists to keep track of dates
+    public List<String> messageDates;
+    public List<Integer> messageNums;
 
     public ContactData()
     {
@@ -53,6 +68,8 @@ public class ContactData implements Comparable<ContactData> {
         deadlineHere = false;
         relationshipPoints = 0;
         streak = 0;
+        messageDates = new ArrayList<String>();
+        messageNums = new ArrayList<Integer>();
     }
 
     public ContactData(String num, MessageData m)
@@ -69,11 +86,62 @@ public class ContactData implements Comparable<ContactData> {
         deadlineHere = false;
         relationshipPoints = 0;
         streak = 0;
+        messageDates = new ArrayList<String>();
+        messageNums = new ArrayList<Integer>();
+    }
+
+    public void addOldMessage(MessageData m) {
+         addToList(new Date(m.timestamp));
+    }
+
+    public void addToList(Date d) {
+        //checking each data point we have
+        SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
+        String f = fmt.format(d);
+        //Log.d("addToList", f);
+        int index = messageDates.indexOf(f);
+        //if there is a key that has the same date, increment the counter for that date
+        if (index != -1) {
+            messageNums.set(index, messageNums.get(index)+1);
+        }
+        else {
+            messageDates.add(f);
+            messageNums.add(1);
+        }
+    }
+
+    public ArrayList<DataPoint> getGraphPoints() {
+        SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
+        ArrayList<DataPoint> d = new ArrayList<DataPoint>();
+        for (int i = 0; i < messageDates.size(); i++) {
+            try {
+                Log.d("getGraphPoints", "" + messageDates.get(i)+ " : " + messageNums.get(i));
+                d.add(new DataPoint(fmt.parse(messageDates.get(i)), messageNums.get(i)));
+            }
+            catch (ParseException e) {
+                Log.d("getGraphPoints", "error: " + e);
+            }
+        }
+        return d;
+    }
+
+    public BarGraphSeries<DataPoint> getBarGraphPoints() {
+        SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
+        DataPoint[] d = new DataPoint[messageDates.size()];
+        for (int i = 0; i < messageDates.size(); i++) {
+            try {
+                Log.d("getGraphPoints", "" + messageDates.get(i)+ " : " + messageNums.get(i));
+                d[i] = new DataPoint(fmt.parse(messageDates.get(i)), messageNums.get(i));
+            }
+            catch (ParseException e) {
+                Log.d("getGraphPoints", "error: " + e);
+            }
+        }
+        return new BarGraphSeries<>(d);
     }
 
     public void addMessage(MessageData m)
     {
-        //messages.add(m);
         //checking if the last messaged time needs updated
         //need to expand this to also update the next message deadline too
         if (lastMessaged < m.timestamp) {
@@ -81,6 +149,7 @@ public class ContactData implements Comparable<ContactData> {
             setContactFrequency(daysPerDeadline);
         }
         totalMessages++;
+        addToList(new Date(m.timestamp));
         return;
     }
 
@@ -111,15 +180,6 @@ public class ContactData implements Comparable<ContactData> {
         return;
     }
 
-    /*public void messageDeadline(MessageData message)
-    {
-        if (message.timestamp > (nextMessageDeadline))
-            return true;
-        else
-            return false;
-        return;
-    }*/
-
     /* adopted this code from a post on Stackoverflow */
     /* provide Context to get thumbnail profile pic and save under pic field */
     public void updatePicture(Context context)
@@ -147,29 +207,18 @@ public class ContactData implements Comparable<ContactData> {
 
     public String toString()
     {
-        //if (messages.size() != 0) {
-            DateFormat formatter = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss");
-            if(nextMessageDeadline == 0)
-                setContactFrequency(1546499000);
-            return "\nName: " + name +
-                    "\nPhone number: " + phoneNum.get(0) +
-                    //"\nNum Messages: " + messages.size() +
-                    "\nRelationship Points: " + relationshipPoints +
-                    "\nLast Messaged:" + formatter.format(lastMessaged) +
-                    "\nNext Deadline:" + formatter.format(nextMessageDeadline) +
-                    "\nDays per Deadline:" + daysPerDeadline +
-                    "\nDeadline?:" + deadlineHere +
-                    "\n";
-        //}
-        /*
-        else {
-            return "\nName: " + name +
-                    "\nPhone number: " + phoneNum.get(0) +
-                    "\nNum Messages: " + messages.size() +
-                    "\nRelationship Points: " + relationshipPoints +
-                    "\nLast Messaged: Never" + "\n";
-        }
-        */
+        DateFormat formatter = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss");
+        if(nextMessageDeadline == 0)
+            setContactFrequency(1546499000);
+        return "\nName: " + name +
+                "\nPhone number: " + phoneNum.get(0) +
+                //"\nNum Messages: " + messages.size() +
+                "\nRelationship Points: " + relationshipPoints +
+                "\nLast Messaged:" + formatter.format(lastMessaged) +
+                "\nNext Deadline:" + formatter.format(nextMessageDeadline) +
+                "\nDays per Deadline:" + daysPerDeadline +
+                "\nDeadline?:" + deadlineHere +
+                "\n";
     }
 
 
