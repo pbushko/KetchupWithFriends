@@ -1,5 +1,6 @@
 package com.example.pbush.ketchupwithfriends;
 
+import android.content.Intent;
 import android.icu.text.SymbolTable;
 import android.provider.ContactsContract;
 import android.util.Log;
@@ -115,7 +116,7 @@ public class ContactData implements Comparable<ContactData> {
         ArrayList<DataPoint> d = new ArrayList<DataPoint>();
         for (int i = 0; i < messageDates.size(); i++) {
             try {
-                Log.d("getGraphPoints", "" + messageDates.get(i)+ " : " + messageNums.get(i));
+                //Log.d("getGraphPoints", "" + messageDates.get(i)+ " : " + messageNums.get(i));
                 d.add(new DataPoint(fmt.parse(messageDates.get(i)), messageNums.get(i)));
             }
             catch (ParseException e) {
@@ -125,12 +126,80 @@ public class ContactData implements Comparable<ContactData> {
         return d;
     }
 
+    public BarGraphSeries<DataPoint> getMonthBarGraphPoints(Date firstDay, Date lastDay) {
+        int sz = messageDates.size();
+        Calendar cal = Calendar.getInstance();
+        int[] counts = new int[6];
+        if (sz != 0) {
+            SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
+            try {
+                int dateIndex = sz - 1;
+                Date d = fmt.parse(messageDates.get(dateIndex));
+                while (dateIndex > 0 && d.before(lastDay) && d.after(firstDay)) {
+                    cal.setTime(d);
+                    int idx = cal.get(Calendar.WEEK_OF_MONTH) - 1;
+                    Log.d("monthpts", "" + idx);
+                    counts[idx] += messageNums.get(dateIndex);
+                    dateIndex--;
+                    d = fmt.parse(messageDates.get(dateIndex));
+                }
+                DataPoint[] dps = new DataPoint[6];
+                for (int i = 0; i < 6; i++) {
+                    dps[i] = new DataPoint(i+1, counts[i]);
+                }
+                //after accumulating all the indicies
+                return new BarGraphSeries<>(dps);
+            }
+            catch (ParseException e) {
+                //return an empty graph otherwise
+                return new BarGraphSeries<>(new DataPoint[]{});
+            }
+        }
+        else {
+            //return an empty graph otherwise
+            return new BarGraphSeries<>(new DataPoint[]{});
+        }
+    }
+
+    public BarGraphSeries<DataPoint> getYearBarGraphPoints(Date firstDay, Date lastDay) {
+        int sz = messageDates.size();
+        int[] counts = new int[13];
+        if (sz != 0) {
+            SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
+            try {
+                int dateIndex = sz - 1;
+                Date d = fmt.parse(messageDates.get(dateIndex));
+                while (dateIndex > 0 && d.before(lastDay) && d.after(firstDay)) {
+                    int idx = Integer.parseInt(messageDates.get(dateIndex).substring(4, 6));
+                    Log.d("month of year", "total:" + messageDates.get(dateIndex) + " idx:" + idx);
+                    counts[idx] += messageNums.get(dateIndex);
+                    dateIndex--;
+                    d = fmt.parse(messageDates.get(dateIndex));
+                }
+                DataPoint[] dps = new DataPoint[12];
+                for (int i = 1; i < 13; i++) {
+                    dps[i-1] = new DataPoint(i, counts[i]);
+                }
+                //after accumulating all the indicies
+                return new BarGraphSeries<>(dps);
+            }
+            catch (ParseException e) {
+                //return an empty graph otherwise
+                return new BarGraphSeries<>(new DataPoint[]{});
+            }
+        }
+        else {
+            //return an empty graph otherwise
+            return new BarGraphSeries<>(new DataPoint[]{});
+        }
+    }
+
     public BarGraphSeries<DataPoint> getBarGraphPoints() {
         SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
         DataPoint[] d = new DataPoint[messageDates.size()];
         for (int i = 0; i < messageDates.size(); i++) {
             try {
-                Log.d("getGraphPoints", "" + messageDates.get(i)+ " : " + messageNums.get(i));
+                //Log.d("getGraphPoints", "" + messageDates.get(i)+ " : " + messageNums.get(i));
                 d[i] = new DataPoint(fmt.parse(messageDates.get(i)), messageNums.get(i));
             }
             catch (ParseException e) {

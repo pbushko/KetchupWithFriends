@@ -692,7 +692,7 @@ public class MainScreen extends AppCompatActivity {
         Log.d("write data to screen", "done writing data");
     }
 
-    public void setContactScreen(final int idx, String graphSpinnerString) {
+    public void setContactScreen(final int idx, final String graphSpinnerString) {
         mFirstLoading = true;
         ContactData c = mContacts.get(idx);
         setContentView(R.layout.contact_data_screen);
@@ -701,14 +701,13 @@ public class MainScreen extends AppCompatActivity {
         name.setText(c.name);
         final Spinner graphSpinner = (Spinner) findViewById(R.id.graph_sorting);
         mContactGraph = findViewById(R.id.graph);
-        mContactGraph.getGridLabelRenderer().setLabelFormatter(new DateAsXAxisLabelFormatter(this));
         ArrayList<DataPoint> dps = c.getGraphPoints();
         BarGraphSeries<DataPoint> s = c.getBarGraphPoints();
         graphSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 //this gets called on initialization as well
                 if (!mFirstLoading) {
-                    setContactScreen(idx, graphSpinner.toString());
+                    setContactScreen(idx, graphSpinner.getSelectedItem().toString());
                 }
                 else {
                     mFirstLoading = false;
@@ -719,77 +718,152 @@ public class MainScreen extends AppCompatActivity {
                 return;
             }
         });
-        mContactGraph.getGridLabelRenderer().setNumHorizontalLabels(7);
+
         SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
         Calendar cal = Calendar.getInstance();
         Date today = cal.getTime();
         Date last = cal.getTime();
-        try {
-            String now = fmt.format(new Date(cal.getTimeInMillis()));
-            today = fmt.parse(now);
-            //formatting for week
-            cal.add(Calendar.DAY_OF_YEAR, -6);
-            last = fmt.parse(fmt.format(new Date(cal.getTimeInMillis())));
-        }
-        catch (ParseException e) {
 
-        }
+        switch (graphSpinnerString) {
 
-        s.setSpacing(30);
-        // styling
-        s.setValueDependentColor(new ValueDependentColor<DataPoint>() {
-            @Override
-            public int get(DataPoint data) {
-                return Color.rgb((int) data.getX()*255/4, (int) Math.abs(data.getY()*255/6), 100);
-            }
-        });
-        s.setDrawValuesOnTop(true);
-        s.setValuesOnTopColor(Color.RED);
-        //s.setDrawDataPoints(true);
-        mContactGraph.addSeries(s);
-        mContactGraph.getGridLabelRenderer().setHumanRounding(false);
-        mContactGraph.getViewport().setMinX(last.getTime());
-        mContactGraph.getViewport().setMaxX(today.getTime());
-        mContactGraph.getViewport().setXAxisBoundsManual(true);
-        mContactGraph.getGridLabelRenderer().setLabelFormatter(new DefaultLabelFormatter() {
-            @Override
-            public String formatLabel(double value, boolean isValueX) {
-                if (isValueX) {
-                    // show new x depending on the day
-                    Log.d("value", "" + value);
-                    Calendar calendar = Calendar.getInstance();
-                    calendar.setTime(new Date((long)value));
-                    String dow = "";
-                    switch(calendar.get(Calendar.DAY_OF_WEEK)) {
-                        case (Calendar.SUNDAY):
-                            dow = "Su";
-                            break;
-                        case (Calendar.MONDAY):
-                            dow = "M";
-                            break;
-                        case (Calendar.TUESDAY):
-                            dow = "T";
-                            break;
-                        case (Calendar.WEDNESDAY):
-                            dow = "W";
-                            break;
-                        case (Calendar.THURSDAY):
-                            dow = "Th";
-                            break;
-                        case (Calendar.FRIDAY):
-                            dow = "F";
-                            break;
-                        default:
-                            dow = "Sa";
-                            break;
-                    }
-                    return dow;
-                } else {
-                    // show currency for y values
-                    return super.formatLabel(value, isValueX);
+            case ("Week") :
+                graphSpinner.setSelection(0);
+                mContactGraph.getGridLabelRenderer().setLabelFormatter(new DateAsXAxisLabelFormatter(this));
+                mContactGraph.getGridLabelRenderer().setNumHorizontalLabels(7);
+                try {
+                    String now = fmt.format(new Date(cal.getTimeInMillis()));
+                    today = fmt.parse(now);
+                    //formatting for week
+                    cal.add(Calendar.DAY_OF_YEAR, -6);
+                    last = fmt.parse(fmt.format(new Date(cal.getTimeInMillis())));
+                } catch (ParseException e) {
+
                 }
-            }
-        });
+                s.setSpacing(30);
+                // styling
+                s.setValueDependentColor(new ValueDependentColor<DataPoint>() {
+                    @Override
+                    public int get(DataPoint data) {
+                        return Color.rgb((int) data.getX() * 255 / 4, (int) Math.abs(data.getY() * 255 / 6), 100);
+                    }
+                });
+                s.setDrawValuesOnTop(true);
+                s.setValuesOnTopColor(Color.RED);
+                mContactGraph.addSeries(s);
+                mContactGraph.getGridLabelRenderer().setHumanRounding(false);
+                mContactGraph.getViewport().setMinX(last.getTime());
+                mContactGraph.getViewport().setMaxX(today.getTime());
+                mContactGraph.getViewport().setXAxisBoundsManual(true);
+                mContactGraph.getGridLabelRenderer().setLabelFormatter(new DefaultLabelFormatter() {
+                    @Override
+                    public String formatLabel(double value, boolean isValueX) {
+                        if (isValueX) {
+                            // show new x depending on the day
+                            Calendar calendar = Calendar.getInstance();
+                            calendar.setTime(new Date((long) value));
+                            String dow = "";
+                            switch (calendar.get(Calendar.DAY_OF_WEEK)) {
+                                case (Calendar.SUNDAY):
+                                    dow = "Su";
+                                    break;
+                                case (Calendar.MONDAY):
+                                    dow = "M";
+                                    break;
+                                case (Calendar.TUESDAY):
+                                    dow = "T";
+                                    break;
+                                case (Calendar.WEDNESDAY):
+                                    dow = "W";
+                                    break;
+                                case (Calendar.THURSDAY):
+                                    dow = "Th";
+                                    break;
+                                case (Calendar.FRIDAY):
+                                    dow = "F";
+                                    break;
+                                default:
+                                    dow = "Sa";
+                                    break;
+                            }
+                            return dow;
+                        } else {
+                            // show currency for y values
+                            return super.formatLabel(value, isValueX);
+                        }
+                    }
+                });
+                break;
+            case("Month"):
+                graphSpinner.setSelection(1);
+                mContactGraph.getGridLabelRenderer().setNumHorizontalLabels(Calendar.WEEK_OF_MONTH + 2);
+                try {
+                    String now = fmt.format(new Date(cal.getTimeInMillis()));
+                    today = fmt.parse(now);
+                    //getting the beginning of the month
+                    cal.add(Calendar.DAY_OF_MONTH, -Integer.parseInt(now.substring(6)));
+                    last = fmt.parse(fmt.format(new Date(cal.getTimeInMillis())));
+                } catch (ParseException e) {
+                }
+
+                s = c.getMonthBarGraphPoints(last, today);
+                //grouping the
+                s.setSpacing(50);
+                // styling
+                s.setValueDependentColor(new ValueDependentColor<DataPoint>() {
+                    @Override
+                    public int get(DataPoint data) {
+                        return Color.rgb((int) data.getX() * 255 / 4, (int) Math.abs(data.getY() * 255 / 6), 100);
+                    }
+                });
+                s.setDrawValuesOnTop(true);
+                s.setValuesOnTopColor(Color.RED);
+
+                mContactGraph.addSeries(s);
+                mContactGraph.getGridLabelRenderer().setHumanRounding(false);
+                mContactGraph.getViewport().setMinX(0);
+                mContactGraph.getViewport().setMaxX(5);
+                mContactGraph.getViewport().setXAxisBoundsManual(true);
+                break;
+            //default is the year
+            default:
+                graphSpinner.setSelection(2);
+                mContactGraph.getGridLabelRenderer().setNumHorizontalLabels(14);
+                try {
+                    String now = fmt.format(new Date(cal.getTimeInMillis()));
+                    today = fmt.parse(now);
+                    //getting the end of the year
+                    /*
+                    int year = Integer.parseInt(now.substring(0, 4)) - 1;
+                    String newDate = year + now.substring(4);
+                    Log.d("newDate", "year: " + year + "new: " + newDate);
+                    last = fmt.parse(newDate);
+                    */
+                    cal.add(Calendar.DAY_OF_YEAR, -364);
+                    last = fmt.parse(fmt.format(new Date(cal.getTimeInMillis())));
+                    Log.d("newdate", "" + last);
+                } catch (ParseException e) {
+                }
+
+                s = c.getYearBarGraphPoints(last, today);
+                //grouping the
+                s.setSpacing(20);
+                // styling
+                s.setValueDependentColor(new ValueDependentColor<DataPoint>() {
+                    @Override
+                    public int get(DataPoint data) {
+                        return Color.rgb((int) data.getX() * 255 / 4, (int) Math.abs(data.getY() * 255 / 6), 100);
+                    }
+                });
+                s.setDrawValuesOnTop(true);
+                s.setValuesOnTopColor(Color.RED);
+
+                mContactGraph.addSeries(s);
+                mContactGraph.getGridLabelRenderer().setHumanRounding(false);
+                mContactGraph.getViewport().setMinX(0);
+                mContactGraph.getViewport().setMaxX(13);
+                mContactGraph.getViewport().setXAxisBoundsManual(true);
+                break;
+        }
         final Spinner spinner = (Spinner)findViewById(R.id.time_option_spinner);
         final EditText num = (EditText) findViewById(R.id.user_num_input);
         num.setTransformationMethod(null);
