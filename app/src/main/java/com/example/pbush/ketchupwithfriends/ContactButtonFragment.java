@@ -87,7 +87,13 @@ public class ContactButtonFragment extends Fragment implements MainScreen.Contac
         }
 
         nameText.setText(c.name);
-        msgDeadlineText.setText("Message every " + c.daysPerDeadline + " days");
+        String[] split = c.daysPerDeadline.split(" ");
+        if (Integer.parseInt(split[0]) != 1) {
+            msgDeadlineText.setText("Message every " + c.daysPerDeadline.toLowerCase() + "s");
+        }
+        else {
+            msgDeadlineText.setText("Message every " + c.daysPerDeadline.toLowerCase());
+        }
         resetProgressBar();
     }
 
@@ -105,62 +111,15 @@ public class ContactButtonFragment extends Fragment implements MainScreen.Contac
             x /= 60;
             long min = x % 60;
             x /= 60;
-            long hours = min % 24;
+            long hours = x % 24;
             x /= 24;
             long days = x;
-            /*
-            long days = TimeUnit.MILLISECONDS.toDays(left);
-            long hours = TimeUnit.MILLISECONDS.toHours(left);
-            long min = TimeUnit.MILLISECONDS.toMinutes(left);
-            long sec = TimeUnit.MILLISECONDS.toSeconds(left);
-            if (days != 0) {
-                hours = (hours / days) % 24;
-                if (hours != 0) {
-                    min = min / days / hours % 60;
-                    if (min != 0) {
-                        sec = sec / min / hours / days % 60;
-                    }
-                    else {
-                        sec = sec / days % 60;
-                    }
-                }
-                else {
-                    min = min / days % 60;
-                    if (min != 0) {
-                        sec = sec / min / days % 60;
-                    }
-                    else {
-                        sec = sec / days % 60;
-                    }
-                }
-            }
-            else
-            {
-                hours = hours % 24;
-                if (hours != 0) {
-                    min = min / hours % 60;
-                    if (min != 0) {
-                        sec = sec / min / hours % 60;
-                    }
-                    else {
-                        sec = sec / hours % 60;
-                    }
-                }
-                else {
-                    min = min % 60;
-                    if (min != 0) {
-                        sec = sec / min % 60;
-                    }
-                    else {
-                        sec = sec % 60;
-                    }
-                }
-            }*/
+
             timeLeftText.setText("Time Left: " + days + "d, " + hours + "h, " + min + "m, " + sec + "s");
-            long d  = (TimeUnit.HOURS.toMillis((long)contact.daysPerDeadline));
-            Log.d("time left", "time left: " + diff);
-            int p = (int)(100-((diff)/(float)d)*100);
-            //Log.d("for contact", "left: " + left + " days : " + d + " progress: " + p);
+            long d  = (contact.nextMessageDeadline - contact.lastMessaged);
+            //Log.d("time left", "time left: " + diff);
+            int p = (int)(100 - (diff/(float)d)*100);
+            //Log.d("for contact", "left: " + diff + " days : " + d + " progress: " + p);
             progress.setProgress(p);
 
         }

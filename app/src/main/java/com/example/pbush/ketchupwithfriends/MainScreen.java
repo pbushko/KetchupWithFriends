@@ -59,6 +59,7 @@ import com.jjoe64.graphview.DefaultLabelFormatter;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.ValueDependentColor;
 import com.jjoe64.graphview.helper.DateAsXAxisLabelFormatter;
+import com.jjoe64.graphview.helper.StaticLabelsFormatter;
 import com.jjoe64.graphview.series.BarGraphSeries;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
@@ -168,9 +169,7 @@ public class MainScreen extends AppCompatActivity {
             public void run() {
                 //checking if a button has been held for long enough
                 long time2 = Calendar.getInstance().getTimeInMillis();
-                //Log.d("event", "held " + mTimer);
-                //Log.d("event", "time2 " + time2);
-                if (time2 - mTimer > 2000) {
+                if (time2 - mTimer > 1000) {
                     mHeld = true;
                     mDeleteContactsButton.setVisibility(View.VISIBLE);
                     //putting check boxes on all the contact buttons
@@ -488,8 +487,8 @@ public class MainScreen extends AppCompatActivity {
     }
 
     public void getNewInfo() {
-        Toast.makeText(this, "Getting new info", Toast.LENGTH_SHORT).show();
-        Log.d("getNewInfo", "last data scrape: " + lastDataScrape);
+        //Toast.makeText(this, "Getting new info", Toast.LENGTH_SHORT).show();
+        //Log.d("getNewInfo", "last data scrape: " + lastDataScrape);
         //getting permission from the user to access message and contact data
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.READ_CONTACTS)
@@ -541,7 +540,7 @@ public class MainScreen extends AppCompatActivity {
             }
             sortContacts();
         }
-        Toast.makeText(this, "Got new info", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, "Got new info", Toast.LENGTH_SHORT).show();
         saveInfo();
     }
 
@@ -731,6 +730,7 @@ public class MainScreen extends AppCompatActivity {
         Date today = cal.getTime();
         Date last = cal.getTime();
 
+        mContactGraph.getGridLabelRenderer().setVerticalAxisTitle("# Sent Messages");
         switch (graphSpinnerString) {
 
             case ("Week") :
@@ -799,9 +799,11 @@ public class MainScreen extends AppCompatActivity {
                         }
                     }
                 });
+                mContactGraph.getGridLabelRenderer().setHorizontalAxisTitle("Day");
                 break;
             case("Month"):
                 graphSpinner.setSelection(1);
+                mContactGraph.getGridLabelRenderer().setHorizontalAxisTitle("Week");
                 mContactGraph.getGridLabelRenderer().setNumHorizontalLabels(Calendar.WEEK_OF_MONTH + 2);
                 try {
                     String now = fmt.format(new Date(cal.getTimeInMillis()));
@@ -833,6 +835,7 @@ public class MainScreen extends AppCompatActivity {
             //default is the year
             default:
                 graphSpinner.setSelection(2);
+                mContactGraph.getGridLabelRenderer().setHorizontalAxisTitle("Month");
                 mContactGraph.getGridLabelRenderer().setNumHorizontalLabels(14);
                 try {
                     //getting the end of the year
@@ -860,8 +863,45 @@ public class MainScreen extends AppCompatActivity {
                 mContactGraph.getViewport().setMinX(0);
                 mContactGraph.getViewport().setMaxX(13);
                 mContactGraph.getViewport().setXAxisBoundsManual(true);
+                mContactGraph.getGridLabelRenderer().setLabelFormatter(new DefaultLabelFormatter() {
+                    @Override
+                    public String formatLabel(double value, boolean isValueX) {
+                        if (isValueX) {
+                            // show new x depending on the month
+                            switch ((int)Math.round(value)) {
+                                case (1):
+                                case (6):
+                                case (7):
+                                    return "J";
+                                case (2):
+                                    return "F";
+                                case (3):
+                                case (5):
+                                    return "M";
+                                case (4):
+                                case (8):
+                                    return "A";
+                                case (9):
+                                    return "S";
+                                case (10):
+                                    return "O";
+                                case (11):
+                                    return "N";
+                                case (12):
+                                    return "D";
+                                default:
+                                    return "";
+                            }
+                        } else {
+                            // show currency for y values
+                            return super.formatLabel(value, isValueX);
+                        }
+                    }
+                });
                 break;
+
         }
+
         final Spinner spinner = (Spinner)findViewById(R.id.time_option_spinner);
         final EditText num = (EditText) findViewById(R.id.user_num_input);
         num.setTransformationMethod(null);
@@ -879,37 +919,15 @@ public class MainScreen extends AppCompatActivity {
         submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int multiplier = 1;
-                switch (spinner.getSelectedItem().toString())
-                {
-                    case("Hour"):
-                        multiplier = 1;
-                        break;
-                    case("Day"):
-                        multiplier = 24;
-                        break;
-                    case("Week"):
-                        multiplier = 7*24;
-                        break;
-                    // NOT IMPLEMENTED RIGHT NOW
-                    case("Month"):
-                        multiplier = 1;
-                        break;
-                    default:
-                        multiplier = 1;
-                        break;
-                }
-                try {
-                    Log.d("updating", "toAdd: " +Integer.parseInt(num.getText().toString()) );
-                    int toAdd = Integer.parseInt(num.getText().toString()) * multiplier;
-                    mContacts.get(idx).setContactFrequency(toAdd);
+                String res = mContacts.get(idx).setContactFrequency(num.getText().toString() + " " + spinner.getSelectedItem().toString());
+                if (res == "") {
                     for (ContactData cd : mContacts) {
                         Log.d("contact", "" + cd.toString());
                     }
                     saveInfo();
                 }
-                catch (Exception e) {
-                    Toast.makeText(MainScreen.this, "Enter a number!", Toast.LENGTH_SHORT).show();
+                else {
+                    Toast.makeText(MainScreen.this, res, Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -920,10 +938,6 @@ public class MainScreen extends AppCompatActivity {
                 setMainScreen();
             }
         });
-    }
-
-    private void setGraphView(GraphView g, Spinner s) {
-
     }
 
     public void deleteContacts(View v) {

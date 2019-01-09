@@ -44,7 +44,7 @@ public class ContactData implements Comparable<ContactData> {
     //public List<MessageData> messages; //messages sent to the contact
     public long nextMessageDeadline; //the next time this contact will need to be messaged to keep the streak
     public boolean deadlineHere;
-    public int daysPerDeadline; //the amount of days that can pass between messages before breaking the streak
+    public String daysPerDeadline; //the amount of days that can pass between messages before breaking the streak
     public int relationshipPoints; //the "points" assigned to this contact
     public int streak; //the streak of consecutive times the contact has been messaged daily
     public long lastMessaged;
@@ -62,7 +62,7 @@ public class ContactData implements Comparable<ContactData> {
         totalMessages = 0;
         //messages = new ArrayList<MessageData>();
         lastMessaged = 0;
-        daysPerDeadline = 0;
+        daysPerDeadline = "1 Week";
         nextMessageDeadline = 0;
         deadlineHere = false;
         relationshipPoints = 0;
@@ -80,7 +80,7 @@ public class ContactData implements Comparable<ContactData> {
         //messages = new ArrayList<MessageData>();
         //messages.add(m);
         lastMessaged = 0;
-        daysPerDeadline = 0;
+        daysPerDeadline = "1 Week";
         nextMessageDeadline = 0;
         deadlineHere = false;
         relationshipPoints = 0;
@@ -97,7 +97,6 @@ public class ContactData implements Comparable<ContactData> {
         //checking each data point we have
         SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
         String f = fmt.format(d);
-        //Log.d("addToList", f);
         int index = messageDates.indexOf(f);
         //if there is a key that has the same date, increment the counter for that date
         if (index != -1) {
@@ -231,17 +230,43 @@ public class ContactData implements Comparable<ContactData> {
         return;
     }
 
-    public void setContactFrequency(int hours)
+    //returns true if successful
+    public String setContactFrequency(String timePeriod)
     {
-        //Log.d("contact data", "hours: " + hours + " nextMessageDeadline: " + nextMessageDeadline + "lastMessaged: " +lastMessaged);
-        daysPerDeadline = hours;
-        Calendar c = Calendar.getInstance();
-        c.setTimeInMillis(lastMessaged);
-        c.add(Calendar.HOUR, hours);
-
-        nextMessageDeadline = c.getTimeInMillis();
-        //Log.d("contact data", "new nextMessagedDeadline: " + nextMessageDeadline);
-        checkIfDeadlineHere();
+        try {
+            daysPerDeadline = timePeriod;
+            String[] split = timePeriod.split(" ");
+            int time = 1;
+            try {
+                time = Integer.parseInt(split[0]);
+            }
+            catch (Exception e) {
+                return "Enter a number between 1 and 12";
+            }
+            Calendar c = Calendar.getInstance();
+            c.setTimeInMillis(lastMessaged);
+            switch (split[1]) {
+                case ("Hour"):
+                    c.add(Calendar.HOUR, time);
+                    break;
+                case ("Day"):
+                    c.add(Calendar.DAY_OF_YEAR, time);
+                    break;
+                case ("Week"):
+                    c.add(Calendar.WEEK_OF_YEAR, time);
+                    break;
+                // do a month otherwise
+                case ("Month"):
+                    c.add(Calendar.MONTH, time);
+                    break;
+            }
+            nextMessageDeadline = c.getTimeInMillis();
+            checkIfDeadlineHere();
+            return "";
+        }
+        catch (Exception e) {
+            return "" + e;
+        }
     }
 
     public void checkIfDeadlineHere()
@@ -288,7 +313,7 @@ public class ContactData implements Comparable<ContactData> {
     {
         DateFormat formatter = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss");
         if(nextMessageDeadline == 0)
-            setContactFrequency(1546499000);
+            setContactFrequency("1 Week");
         return "\nName: " + name +
                 "\nPhone number: " + phoneNum.get(0) +
                 //"\nNum Messages: " + messages.size() +
