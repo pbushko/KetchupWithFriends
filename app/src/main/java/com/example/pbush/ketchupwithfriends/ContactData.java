@@ -49,8 +49,6 @@ public class ContactData implements Comparable<ContactData> {
     public int streak; //the streak of consecutive times the contact has been messaged daily
     public long lastMessaged;
     public int totalMessages;
-    /* profile picture */
-    public ByteArrayInputStream pic;
 
     //concurrent lists to keep track of dates
     public List<String> messageDates;
@@ -126,7 +124,7 @@ public class ContactData implements Comparable<ContactData> {
         return d;
     }
 
-    public BarGraphSeries<DataPoint> getMonthBarGraphPoints(Date firstDay, Date lastDay) {
+    public BarGraphSeries<DataPoint> getMonthBarGraphPoints(Date firstDay) {
         int sz = messageDates.size();
         Calendar cal = Calendar.getInstance();
         int[] counts = new int[6];
@@ -135,7 +133,7 @@ public class ContactData implements Comparable<ContactData> {
             try {
                 int dateIndex = sz - 1;
                 Date d = fmt.parse(messageDates.get(dateIndex));
-                while (dateIndex > 0 && d.before(lastDay) && d.after(firstDay)) {
+                while (dateIndex > 0 && d.before(new Date(Calendar.getInstance().getTimeInMillis())) && d.after(firstDay)) {
                     cal.setTime(d);
                     int idx = cal.get(Calendar.WEEK_OF_MONTH) - 1;
                     Log.d("monthpts", "" + idx);
@@ -161,7 +159,7 @@ public class ContactData implements Comparable<ContactData> {
         }
     }
 
-    public BarGraphSeries<DataPoint> getYearBarGraphPoints(Date firstDay, Date lastDay) {
+    public BarGraphSeries<DataPoint> getYearBarGraphPoints(Date firstDay) {
         int sz = messageDates.size();
         int[] counts = new int[13];
         if (sz != 0) {
@@ -169,7 +167,8 @@ public class ContactData implements Comparable<ContactData> {
             try {
                 int dateIndex = sz - 1;
                 Date d = fmt.parse(messageDates.get(dateIndex));
-                while (dateIndex > 0 && d.before(lastDay) && d.after(firstDay)) {
+                Log.d("year", "" + d.before(new Date(Calendar.getInstance().getTimeInMillis())));
+                while (dateIndex > 0 && d.before(new Date(Calendar.getInstance().getTimeInMillis())) && d.after(firstDay)) {
                     int idx = Integer.parseInt(messageDates.get(dateIndex).substring(4, 6));
                     Log.d("month of year", "total:" + messageDates.get(dateIndex) + " idx:" + idx);
                     counts[idx] += messageNums.get(dateIndex);
@@ -234,10 +233,15 @@ public class ContactData implements Comparable<ContactData> {
 
     public void setContactFrequency(int hours)
     {
+        //Log.d("contact data", "hours: " + hours + " nextMessageDeadline: " + nextMessageDeadline + "lastMessaged: " +lastMessaged);
         daysPerDeadline = hours;
-        nextMessageDeadline = lastMessaged + (hours * MS_PER_HOUR);
+        Calendar c = Calendar.getInstance();
+        c.setTimeInMillis(lastMessaged);
+        c.add(Calendar.HOUR, hours);
+
+        nextMessageDeadline = c.getTimeInMillis();
+        //Log.d("contact data", "new nextMessagedDeadline: " + nextMessageDeadline);
         checkIfDeadlineHere();
-        Log.d("contact data", "set contact frequency for " + name + "!");
     }
 
     public void checkIfDeadlineHere()
@@ -251,27 +255,33 @@ public class ContactData implements Comparable<ContactData> {
 
     /* adopted this code from a post on Stackoverflow */
     /* provide Context to get thumbnail profile pic and save under pic field */
-    public void updatePicture(Context context)
-    {
-        long number = Long.parseLong(phoneNum.get(0));
-        Uri contactUri = ContentUris.withAppendedId(Contacts.CONTENT_URI, number);
-        Uri photoUri = Uri.withAppendedPath(contactUri, Contacts.Photo.CONTENT_DIRECTORY);
-        Cursor cursor = context.getContentResolver().query(photoUri,
-                new String[] {Contacts.Photo.PHOTO}, null, null, null);
-        if (cursor == null) {
-            return;
-        }
+    /**
+     * @return the photo URI
+     */
+    public Uri getPhotoUri(Context context) {
         try {
-            if (cursor.moveToFirst()) {
-                byte[] data = cursor.getBlob(0);
-                if (data != null) {
-                    pic = new ByteArrayInputStream(data);
-                    return;
+            Cursor cur = context.getContentResolver().query(
+                    ContactsContract.Data.CONTENT_URI,
+                    null,
+                    ContactsContract.Data.CONTACT_ID + "=" + id + " AND "
+                            + ContactsContract.Data.MIMETYPE + "='"
+                            + ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE + "'", null,
+                    null);
+            if (cur != null) {
+                if (!cur.moveToFirst()) {
+                    return null; // no photo
                 }
+            } else {
+                return null; // error in cursor process
             }
-        } finally {
-            cursor.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
+        Uri person = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, Long
+                .parseLong(id));
+        Uri temp = Uri.withAppendedPath(person, ContactsContract.Contacts.Photo.CONTENT_DIRECTORY);
+        return temp;
     }
 
     public String toString()

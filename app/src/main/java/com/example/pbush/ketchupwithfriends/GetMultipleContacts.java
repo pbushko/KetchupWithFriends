@@ -19,21 +19,19 @@ import android.widget.TextView;
 public class GetMultipleContacts extends Fragment implements MainScreen.GetContactsFragment {
 
     private ContactData contact;
-    private TextView nameText;
     private CheckBox checkBox;
 
     @Override
     public View onCreateView(LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState) {
         /** Inflating the layout for this fragment **/
         View v = inflater.inflate(R.layout.get_contact_fragment, container, false);
-        nameText = (TextView) v.findViewById(R.id.name);
         checkBox = (CheckBox) v.findViewById(R.id.checkBox);
         return v;
     }
 
     public void resetButton(ContactData c) {
         contact = c;
-        nameText.setText(c.name);
+        checkBox.setText("   " + c.name);
     }
 
     public boolean isChecked() {

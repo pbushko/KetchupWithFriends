@@ -170,8 +170,7 @@ public class MainScreen extends AppCompatActivity {
                 long time2 = Calendar.getInstance().getTimeInMillis();
                 //Log.d("event", "held " + mTimer);
                 //Log.d("event", "time2 " + time2);
-                if (time2 - mTimer > 800) {
-                    Log.d("event", "held");
+                if (time2 - mTimer > 2000) {
                     mHeld = true;
                     mDeleteContactsButton.setVisibility(View.VISIBLE);
                     //putting check boxes on all the contact buttons
@@ -624,6 +623,11 @@ public class MainScreen extends AppCompatActivity {
                     @Override
                     public boolean onTouch(View v, MotionEvent event) {
                         switch(event.getAction()) {
+                            case MotionEvent.ACTION_SCROLL:
+                                btn.setEnabled(false);
+                                mHandler.removeCallbacks(mRunnable);
+                                mHeld = false;
+                                break;
                             case MotionEvent.ACTION_DOWN:
                                 // Start
                                 mHeld = false;
@@ -641,10 +645,13 @@ public class MainScreen extends AppCompatActivity {
                                     setContactScreen(index, "Week");
                                 }
                                 btn.setEnabled(false);
-                                mHeld = false;
                                 mHandler.removeCallbacks(mRunnable);
+                                mHeld = false;
                                 break;
                             default:
+                                btn.setEnabled(false);
+                                mHandler.removeCallbacks(mRunnable);
+                                mHeld = false;
                                 break;
                         }
                         return true;
@@ -798,14 +805,13 @@ public class MainScreen extends AppCompatActivity {
                 mContactGraph.getGridLabelRenderer().setNumHorizontalLabels(Calendar.WEEK_OF_MONTH + 2);
                 try {
                     String now = fmt.format(new Date(cal.getTimeInMillis()));
-                    today = fmt.parse(now);
                     //getting the beginning of the month
                     cal.add(Calendar.DAY_OF_MONTH, -Integer.parseInt(now.substring(6)));
                     last = fmt.parse(fmt.format(new Date(cal.getTimeInMillis())));
                 } catch (ParseException e) {
                 }
 
-                s = c.getMonthBarGraphPoints(last, today);
+                s = c.getMonthBarGraphPoints(last);
                 //grouping the
                 s.setSpacing(50);
                 // styling
@@ -829,22 +835,14 @@ public class MainScreen extends AppCompatActivity {
                 graphSpinner.setSelection(2);
                 mContactGraph.getGridLabelRenderer().setNumHorizontalLabels(14);
                 try {
-                    String now = fmt.format(new Date(cal.getTimeInMillis()));
-                    today = fmt.parse(now);
                     //getting the end of the year
-                    /*
-                    int year = Integer.parseInt(now.substring(0, 4)) - 1;
-                    String newDate = year + now.substring(4);
-                    Log.d("newDate", "year: " + year + "new: " + newDate);
-                    last = fmt.parse(newDate);
-                    */
                     cal.add(Calendar.DAY_OF_YEAR, -364);
                     last = fmt.parse(fmt.format(new Date(cal.getTimeInMillis())));
                     Log.d("newdate", "" + last);
                 } catch (ParseException e) {
                 }
 
-                s = c.getYearBarGraphPoints(last, today);
+                s = c.getYearBarGraphPoints(last);
                 //grouping the
                 s.setSpacing(20);
                 // styling
@@ -902,6 +900,7 @@ public class MainScreen extends AppCompatActivity {
                         break;
                 }
                 try {
+                    Log.d("updating", "toAdd: " +Integer.parseInt(num.getText().toString()) );
                     int toAdd = Integer.parseInt(num.getText().toString()) * multiplier;
                     mContacts.get(idx).setContactFrequency(toAdd);
                     for (ContactData cd : mContacts) {
@@ -933,6 +932,7 @@ public class MainScreen extends AppCompatActivity {
                 mContacts.remove(c.getButtonContact());
             }
         }
+        mHandler.removeCallbacks(mRunnable);
         saveInfo();
         setMainScreen();
     }

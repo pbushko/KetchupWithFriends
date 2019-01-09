@@ -3,6 +3,7 @@ package com.example.pbush.ketchupwithfriends;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,6 +19,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.os.AsyncTask;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -35,6 +37,7 @@ public class ContactButtonFragment extends Fragment implements MainScreen.Contac
     private Button msgButton;
     private TextView nameText;
     private TextView timeLeftText;
+    private TextView msgDeadlineText;
     private ProgressBar progress;
     private CheckBox toDelete;
     private ImageView contactImage;
@@ -64,6 +67,7 @@ public class ContactButtonFragment extends Fragment implements MainScreen.Contac
         l.setId(MainScreen.forIds);
         linearLayout = MainScreen.forIds++;
         timeLeftText = (TextView) v.findViewById(R.id.timeLeft);
+        msgDeadlineText = v.findViewById(R.id.contactDeadline);
         progress = (ProgressBar) v.findViewById(R.id.progressBarTimeLeft);
         contactButton = (Button) v.findViewById(R.id.contact_button);
         msgButton = (Button)v.findViewById(R.id.msgButton);
@@ -77,19 +81,34 @@ public class ContactButtonFragment extends Fragment implements MainScreen.Contac
     {
         idx = index;
         contact = c;
+        Uri pic = c.getPhotoUri(getActivity());
+        if (pic != null) {
+            contactImage.setImageURI(pic);
+        }
+
         nameText.setText(c.name);
+        msgDeadlineText.setText("Message every " + c.daysPerDeadline + " days");
         resetProgressBar();
     }
 
     public void resetProgressBar() {
-        long left = contact.nextMessageDeadline - Calendar.getInstance().getTimeInMillis();
-        if (left <= 0)
+        long diff = contact.nextMessageDeadline - Calendar.getInstance().getTimeInMillis();
+        if (diff <= 0)
         {
             timeLeftText.setText("Message them!!");
             //filling the progress bar
             progress.setProgress(100);
         }
         else {
+            long x = diff / 1000;
+            long sec = x % 60;
+            x /= 60;
+            long min = x % 60;
+            x /= 60;
+            long hours = min % 24;
+            x /= 24;
+            long days = x;
+            /*
             long days = TimeUnit.MILLISECONDS.toDays(left);
             long hours = TimeUnit.MILLISECONDS.toHours(left);
             long min = TimeUnit.MILLISECONDS.toMinutes(left);
@@ -136,13 +155,14 @@ public class ContactButtonFragment extends Fragment implements MainScreen.Contac
                         sec = sec % 60;
                     }
                 }
-            }
+            }*/
             timeLeftText.setText("Time Left: " + days + "d, " + hours + "h, " + min + "m, " + sec + "s");
             long d  = (TimeUnit.HOURS.toMillis((long)contact.daysPerDeadline));
-            Log.d("time left", "time left: " + left);
-            int p = (int)(100-((left)/(float)d)*100);
+            Log.d("time left", "time left: " + diff);
+            int p = (int)(100-((diff)/(float)d)*100);
             //Log.d("for contact", "left: " + left + " days : " + d + " progress: " + p);
             progress.setProgress(p);
+
         }
     }
 
