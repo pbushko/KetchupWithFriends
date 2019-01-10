@@ -42,31 +42,15 @@
 
         </LinearLayout>
 
-        <LinearLayout
+        <Button
+            android:id="@+id/ok_button"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/ok_button"
-                android:layout_width="match_parent"
-                android:layout_height="80dp"
-                android:layout_weight="1"
-                android:background="@drawable/whitegranolabar"
-                android:fontFamily="casual"
-                android:text="submit"
-                android:textStyle="bold" />
-
-            <Button
-                android:id="@+id/cancel_button"
-                android:layout_width="match_parent"
-                android:layout_height="80dp"
-                android:layout_weight="1"
-                android:background="@drawable/dategranolabar"
-                android:fontFamily="casual"
-                android:text="cancel"
-                android:textStyle="bold" />
-        </LinearLayout>
+            android:layout_height="80dp"
+            android:layout_weight="1"
+            android:background="@drawable/whitegranolabar"
+            android:fontFamily="casual"
+            android:text="submit"
+            android:textStyle="bold" />
 
     </LinearLayout>
 

@@ -19,6 +19,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.os.AsyncTask;
 
+import com.jjoe64.graphview.series.BarGraphSeries;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -35,6 +37,7 @@ public class ContactButtonFragment extends Fragment implements MainScreen.Contac
     private int linearLayout;
     private Button contactButton;
     private Button msgButton;
+    private Button directMsgButton;
     private TextView nameText;
     private TextView timeLeftText;
     private TextView msgDeadlineText;
@@ -71,6 +74,7 @@ public class ContactButtonFragment extends Fragment implements MainScreen.Contac
         progress = (ProgressBar) v.findViewById(R.id.progressBarTimeLeft);
         contactButton = (Button) v.findViewById(R.id.contact_button);
         msgButton = (Button)v.findViewById(R.id.msgButton);
+        directMsgButton = (Button) v.findViewById(R.id.directMessage);
         toDelete = v.findViewById(R.id.toDelete);
         contactImage = v.findViewById(R.id.contact_image);
         return v;
@@ -168,5 +172,9 @@ public class ContactButtonFragment extends Fragment implements MainScreen.Contac
 
     public Button getMsgButton() {
         return msgButton;
+    }
+
+    public Button getDirectMsgButton() {
+        return directMsgButton;
     }
 }

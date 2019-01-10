@@ -27,6 +27,7 @@ public class MessagingFragment extends Fragment implements MainScreen.MessageFra
 
     private ContactData contact;
     private Button msgButton;
+    private Button cancelButton;
     private EditText msgText;
     private TextView contactName;
 
@@ -39,6 +40,13 @@ public class MessagingFragment extends Fragment implements MainScreen.MessageFra
             @Override
             public void onClick(View v) {
                 sendMessage();
+            }
+        });
+        cancelButton = v.findViewById(R.id.cancel_button);
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MainScreen.m.setMainScreen();
             }
         });
         msgText = (EditText) v.findViewById(R.id.msgText);
@@ -59,10 +67,10 @@ public class MessagingFragment extends Fragment implements MainScreen.MessageFra
 
             if (msg != "" || msg != null) {
                 try {
+                    MainScreen.m.getNewInfo();
                     //Getting intent and PendingIntent instance
-                    Intent intent = new Intent(getContext(), MessagingFragment.class);
-                    PendingIntent pi = PendingIntent.getActivity(getContext(), 0, intent, 0);
-
+                    Intent intent = new Intent(getActivity(), MessagingFragment.class);
+                    PendingIntent pi = PendingIntent.getActivity(getActivity(), 0, intent, 0);
                     //Get the SmsManager instance and call the sendTextMessage method to send message
                     SmsManager sms = SmsManager.getDefault();
                     sms.sendTextMessage(contact.phoneNum.get(0), null, msg, pi, null);
@@ -70,6 +78,8 @@ public class MessagingFragment extends Fragment implements MainScreen.MessageFra
                     MessageData m = new MessageData();
                     m.timestamp = Calendar.getInstance().getTimeInMillis();
                     contact.addMessage(m);
+                    MainScreen.m.lastDataScrape = m.timestamp;
+                    Toast.makeText(getActivity(),"Message sent!", Toast.LENGTH_SHORT).show();
                     MainScreen.m.setMainScreen();
                 } catch (android.content.ActivityNotFoundException ex) {
                     Toast.makeText(getActivity(),

@@ -102,7 +102,7 @@ public class MainScreen extends AppCompatActivity {
     private FirebaseAuth.AuthStateListener mAuthListener;
     private FirebaseDatabase mDatabase;
     private DatabaseReference mDatabaseUserInfo;
-    private long lastDataScrape;
+    public long lastDataScrape;
     private ImageView loadingScreen;
     // Add this to firebase as well
     private AchievementData achieve;
@@ -111,6 +111,7 @@ public class MainScreen extends AppCompatActivity {
     private List<GetContactsFragment> selectedContacts;
     private Button mContactButton;
     private Button mDeleteContactsButton;
+    private Button mGetSingleContact;
 
     private GraphView mContactGraph;
 
@@ -158,6 +159,9 @@ public class MainScreen extends AppCompatActivity {
         mDeleteContactsButton = findViewById(R.id.delete_contacts_button);
         mDeleteContactsButton.setVisibility(View.INVISIBLE);
 
+        mGetSingleContact = findViewById(R.id.get_contacts);
+        mGetSingleContact.setVisibility(View.INVISIBLE);
+
         //getting the achievement tomato to change
         achievementTomato = findViewById(R.id.tomato1);
 
@@ -172,6 +176,7 @@ public class MainScreen extends AppCompatActivity {
                 if (time2 - mTimer > 1000) {
                     mHeld = true;
                     mDeleteContactsButton.setVisibility(View.VISIBLE);
+                    mGetSingleContact.setVisibility(View.INVISIBLE);
                     //putting check boxes on all the contact buttons
                     for (ContactButton f : mContactFrags) {
                         f.switchToDelete();
@@ -549,6 +554,7 @@ public class MainScreen extends AppCompatActivity {
         selectedContacts = new ArrayList<>();
 
         mContactButton.setVisibility(View.VISIBLE);
+        mGetSingleContact.setVisibility(View.INVISIBLE);
 
         for (ContactData contact : c) {
             FragmentManager fragmentManager = getFragmentManager();
@@ -572,6 +578,7 @@ public class MainScreen extends AppCompatActivity {
             }
         }
         mContactButton.setVisibility(View.INVISIBLE);
+        mGetSingleContact.setVisibility(View.INVISIBLE);
         lastDataScrape = 0;
         mMessages = getSentMessages();
         //sorting the messages by number and showing them
@@ -599,6 +606,7 @@ public class MainScreen extends AppCompatActivity {
 
     @SuppressLint("ClickableViewAccessibility")
     public void writeDataToScreen(){
+        mGetSingleContact.setVisibility(View.VISIBLE);
         //showing the contact data
         if (mContacts != null && mContacts.size() > 0) {
             mContactFrags = new ArrayList<>();
@@ -673,7 +681,26 @@ public class MainScreen extends AppCompatActivity {
                                         3);
                             }
                         }
-                        //sendMessage(button.getButtonContact().phoneNum.get(0));
+                        sendMessage(button.getButtonContact().phoneNum.get(0));
+                    }
+                });
+
+                Button directMsgButton = button.getDirectMsgButton();
+                directMsgButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (ContextCompat.checkSelfPermission(MainScreen.this,
+                                Manifest.permission.SEND_SMS)
+                                != PackageManager.PERMISSION_GRANTED) {
+                            if (ActivityCompat.shouldShowRequestPermissionRationale(MainScreen.this,
+                                    Manifest.permission.SEND_SMS)) {
+
+                            } else {
+                                ActivityCompat.requestPermissions(MainScreen.this,
+                                        new String[]{Manifest.permission.SEND_SMS},
+                                        3);
+                            }
+                        }
                         FragmentManager fragmentManager = getFragmentManager();
                         final FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
                         Fragment m = new MessagingFragment();
@@ -698,13 +725,25 @@ public class MainScreen extends AppCompatActivity {
         Log.d("write data to screen", "done writing data");
     }
 
+    @Override
+    public void onBackPressed() {
+        setMainScreen();
+    }
+
     public void setContactScreen(final int idx, final String graphSpinnerString) {
         mFirstLoading = true;
         ContactData c = mContacts.get(idx);
         setContentView(R.layout.contact_data_screen);
-
+        //setting the custom contact image
+        ImageView image = findViewById(R.id.contact_image);
+        Uri pic = c.getPhotoUri(MainScreen.this);
+        if (pic != null) {
+            image.setImageURI(pic);
+        }
         TextView name = (TextView) findViewById(R.id.contact_name);
+        TextView totMessages = (TextView) findViewById(R.id.total_num_messages);
         name.setText(c.name);
+        totMessages.setText(c.numMessages() + " total messages sent since you started using this app");
         final Spinner graphSpinner = (Spinner) findViewById(R.id.graph_sorting);
         mContactGraph = findViewById(R.id.graph);
         ArrayList<DataPoint> dps = c.getGraphPoints();
@@ -899,7 +938,6 @@ public class MainScreen extends AppCompatActivity {
                     }
                 });
                 break;
-
         }
 
         final Spinner spinner = (Spinner)findViewById(R.id.time_option_spinner);
@@ -921,21 +959,12 @@ public class MainScreen extends AppCompatActivity {
             public void onClick(View v) {
                 String res = mContacts.get(idx).setContactFrequency(num.getText().toString() + " " + spinner.getSelectedItem().toString());
                 if (res == "") {
-                    for (ContactData cd : mContacts) {
-                        Log.d("contact", "" + cd.toString());
-                    }
+                    Toast.makeText(MainScreen.this, "Deadline updated successfully!", Toast.LENGTH_SHORT).show();
                     saveInfo();
                 }
                 else {
                     Toast.makeText(MainScreen.this, res, Toast.LENGTH_SHORT).show();
                 }
-            }
-        });
-        Button cancel = findViewById(R.id.cancel_button);
-        cancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                setMainScreen();
             }
         });
     }
@@ -1064,12 +1093,12 @@ public class MainScreen extends AppCompatActivity {
         public abstract void switchToDelete();
         public abstract boolean isChecked();
         public abstract Button getMsgButton();
+        public abstract Button getDirectMsgButton();
     }
 
     public interface GetInput{
         public abstract int getNewContactFreq();
         public abstract Button getSubmitButton();
-        public abstract Button getCancelButton();
     }
 
     public interface MessageFragment {

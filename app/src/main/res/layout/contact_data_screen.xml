@@ -1,59 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/peach_puff">
+    android:background="@drawable/peach_puff_polka_dot">
 
+
+    <TextView
+        android:id="@+id/total_num_messages"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/contact_image"
+        android:layout_alignRight="@+id/contact_image"
+        android:layout_below="@+id/contact_name"
+        android:layout_marginEnd="32dp"
+        android:layout_marginTop="10dp"
+        android:text="TextView"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.254"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.221" />
 
     <ImageView
         android:id="@+id/contact_image"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
+        android:layout_width="76dp"
+        android:layout_height="80dp"
+        android:layout_weight="1"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.123"
+        app:layout_constraintHorizontal_bias="0.107"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.089"
+        app:layout_constraintVertical_bias="0.065"
         app:srcCompat="@mipmap/ic_default_contact_icon_round" />
 
     <TextView
         android:id="@+id/contact_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="528dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="13dp"
+        android:layout_alignLeft="@+id/total_num_messages"
+        android:layout_alignStart="@+id/total_num_messages"
+        android:layout_alignTop="@+id/contact_image"
         android:text="TextView"
+        android:textSize="24sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.381"
+        app:layout_constraintHorizontal_bias="0.553"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageView"
-        app:layout_constraintVertical_bias="1.0" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.09" />
 
     <Spinner
         android:id="@+id/graph_sorting"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="21dp"
-        android:layout_marginEnd="20dp"
-        android:layout_marginStart="343dp"
-        android:layout_marginTop="156dp"
         android:layout_weight="1"
         android:entries="@array/graph_sort_times"
         app:layout_constraintBottom_toTopOf="@+id/graph"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.906"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
 
     <com.jjoe64.graphview.GraphView
         android:id="@+id/graph"
@@ -75,6 +86,7 @@
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginTop="4dp"
+        android:layout_weight="1"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -101,37 +113,22 @@
 
             <Spinner
                 android:id="@+id/time_option_spinner"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1" />
 
         </LinearLayout>
 
-        <LinearLayout
+        <Button
+            android:id="@+id/ok_button"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/ok_button"
-                android:layout_width="match_parent"
-                android:layout_height="80dp"
-                android:layout_weight="1"
-                android:background="@drawable/whitegranolabar"
-                android:fontFamily="casual"
-                android:text="submit"
-                android:textStyle="bold" />
-
-            <Button
-                android:id="@+id/cancel_button"
-                android:layout_width="match_parent"
-                android:layout_height="80dp"
-                android:layout_weight="1"
-                android:background="@drawable/dategranolabar"
-                android:fontFamily="casual"
-                android:text="cancel"
-                android:textStyle="bold" />
-        </LinearLayout>
+            android:layout_height="100dp"
+            android:layout_weight="1"
+            android:background="@drawable/whitegranolabar"
+            android:fontFamily="casual"
+            android:text="set new deadline"
+            android:textStyle="bold" />
 
     </LinearLayout>
+
 </android.support.constraint.ConstraintLayout>

@@ -239,6 +239,9 @@ public class ContactData implements Comparable<ContactData> {
             int time = 1;
             try {
                 time = Integer.parseInt(split[0]);
+                if (time < 1 || time > 12) {
+                    return "Enter a number between 1 and 12";
+                }
             }
             catch (Exception e) {
                 return "Enter a number between 1 and 12";

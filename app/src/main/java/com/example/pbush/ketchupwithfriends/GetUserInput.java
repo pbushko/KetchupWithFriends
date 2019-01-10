@@ -33,7 +33,6 @@ public class GetUserInput extends Fragment implements MainScreen.GetInput{
         View v = inflater.inflate(R.layout.get_contact_frequency_screen, container, false);
 
         submitButton = (Button)v.findViewById(R.id.ok_button);
-        cancelButton = (Button)v.findViewById(R.id.cancel_button);
         spinner = (Spinner)v.findViewById(R.id.time_option_spinner);
         num = (EditText) v.findViewById(R.id.user_num_input);
         num.setTransformationMethod(null);

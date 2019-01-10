@@ -15,11 +15,12 @@
         <Button
             android:id="@+id/delete_contacts_button"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="80dp"
             android:layout_weight="1"
+            android:background="@drawable/dategranolabar"
+            android:onClick="deleteContacts"
             android:text="Delete contacts"
-            android:visibility="invisible"
-            android:onClick="deleteContacts"/>
+            android:visibility="invisible" />
 
         <ImageView
             android:id="@+id/loadingScreen"
@@ -74,14 +75,10 @@
                             <Button
                                 android:id="@+id/get_contacts"
                                 android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
+                                android:layout_height="80dp"
+                                android:background="@drawable/whitegranolabar"
                                 android:text="Get Contact" />
 
-                            <Button
-                                android:id="@+id/get_multiple_contacts"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:text="finalize contacts" />
                         </LinearLayout>
 
                     </ScrollView>
@@ -275,6 +272,13 @@
 
             </FrameLayout>
         </LinearLayout>
+
+        <Button
+            android:id="@+id/get_multiple_contacts"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:background="@drawable/whitegranolabar"
+            android:text="finalize contacts" />
     </TabHost>
 
 </android.support.constraint.ConstraintLayout>
