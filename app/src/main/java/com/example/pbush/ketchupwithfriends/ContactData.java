@@ -217,6 +217,8 @@ public class ContactData implements Comparable<ContactData> {
         }
         totalMessages++;
         addToList(new Date(m.timestamp));
+        //incrementing the message count for achievements
+        MainScreen.m.achieve.incrMsg();
         return;
     }
 

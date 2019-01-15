@@ -38,6 +38,10 @@ public class GetMultipleContacts extends Fragment implements MainScreen.GetConta
         return checkBox.isChecked();
     }
 
+    public void check(boolean toCheck) {
+        checkBox.setChecked(toCheck);
+    }
+
     public ContactData getContact() {
         return contact;
     }

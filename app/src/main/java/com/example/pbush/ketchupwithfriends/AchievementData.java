@@ -1,6 +1,8 @@
 package com.example.pbush.ketchupwithfriends;
 
 
+import android.util.Log;
+
 import java.util.List;
 import java.util.Calendar;
 
@@ -25,7 +27,7 @@ public class AchievementData {
 
 
     public static int[] nContactBench = {10, 20, 30, 40, 50, 60};
-    public static int[] nMessageBench = {1, 10, 20, 50, 100, 1000};
+    public static int[] nMessageBench = {1, 5, 20, 50, 100, 1000};
     public static int[] loginStreakBench = {3, 5, 10, 20, 50, 100};
     public static long loginTime = MS_PER_HOUR / 6; // in milisecond
     public static int[] deadlineBench = {5, 20, 50, 100, 150, 300};
@@ -38,9 +40,6 @@ public class AchievementData {
     public long lastLogin;
     public int deadlinesHit;
 
-    /*
-    public int maxStreak;
-     */
 
     public AchievementData() {
 
@@ -60,7 +59,7 @@ public class AchievementData {
     }
 
     public boolean messageAchievementProgress() {
-        return nMessages > nMessageBench[0];
+        return nMessages >= nMessageBench[0];
     }
     // check day
     public void checkday(long currentTime) {
@@ -92,6 +91,13 @@ public class AchievementData {
 
         benchTest(loginStreak, loginStreakBench, loginStreakAchieve);
     }
+
+    public int getMessageRipeningStage() {
+        if (nMessageAchieve > 0)
+            return R.drawable.red_achievement_tomato;
+        else
+            return R.drawable.green_achievement_tomato;
+    }
 /*
     public void update(MessageData m, List<ContactData> mContacts) {
 
@@ -101,27 +107,15 @@ public class AchievementData {
     // check if new achivement should be given, if so change it and return the next short
     // that should be assigned
     public int benchTest(int score, int[] test, int achieve) {
+        //Log.d("incr", "score, test, achieve: " + score + " " + test.length + " " + achieve + " " + test[achieve]);
         int toRet = achieve;
-        if (test.length < achieve && score >= test[achieve]) {
+        if (test.length > achieve && score >= test[achieve]) {
             //calling this again so in case more than one benchmark is passed
-            toRet = benchTest(score, test, ++toRet);
+            toRet = benchTest(score, test, toRet+1);
+            //Log.d("incr", "after recursion " + toRet);
         }
+        //Log.d("incr", "pls be more than 0: " + toRet);
         return toRet;
-
-        /* Kasarn's old code when achieve was a boolean []
-        for (int i = 0; i < test.length; i++) {
-            // does the score meet the benchmark
-            if (score >= test[i]) {
-                // if this achievement has not been given
-                if (!achieve[i]) {
-                    change = true;
-                    achieve[i] = true;
-                }
-                else {
-                    achieve[i] = true;
-                }
-            }
-        }*/
     }
 
 

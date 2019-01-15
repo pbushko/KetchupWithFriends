@@ -46,7 +46,7 @@ public class FirebaseUIActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_firebase_ui);
-        Toast.makeText(this, "firebase", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, "firebase", Toast.LENGTH_SHORT).show();
 
         googleSignInButton = (SignInButton) findViewById(R.id.googleSignInButton);
 

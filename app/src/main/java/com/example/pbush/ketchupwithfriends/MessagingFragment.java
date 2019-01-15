@@ -29,7 +29,6 @@ public class MessagingFragment extends Fragment implements MainScreen.MessageFra
     private Button msgButton;
     private Button cancelButton;
     private EditText msgText;
-    private TextView contactName;
 
     @Override
     public View onCreateView(LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState) {
@@ -50,14 +49,12 @@ public class MessagingFragment extends Fragment implements MainScreen.MessageFra
             }
         });
         msgText = (EditText) v.findViewById(R.id.msgText);
-        contactName = (TextView) v.findViewById(R.id.contact_name);
         return v;
     }
 
     public void resetData(ContactData c)
     {
         contact = c;
-        contactName.setText(c.name);
     }
 
     //sends the message to the contact
@@ -80,6 +77,8 @@ public class MessagingFragment extends Fragment implements MainScreen.MessageFra
                     contact.addMessage(m);
                     MainScreen.m.lastDataScrape = m.timestamp;
                     Toast.makeText(getActivity(),"Message sent!", Toast.LENGTH_SHORT).show();
+                    MainScreen.m.achieve.incrMsg();
+                    MainScreen.m.saveInfo();
                     MainScreen.m.setMainScreen();
                 } catch (android.content.ActivityNotFoundException ex) {
                     Toast.makeText(getActivity(),

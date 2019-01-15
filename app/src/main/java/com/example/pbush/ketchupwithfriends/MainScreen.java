@@ -31,11 +31,14 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TabHost;
+import android.widget.TabWidget;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.provider.ContactsContract.Contacts;
@@ -105,13 +108,17 @@ public class MainScreen extends AppCompatActivity {
     public long lastDataScrape;
     private ImageView loadingScreen;
     // Add this to firebase as well
-    private AchievementData achieve;
+    public AchievementData achieve;
     private MediaPlayer mediaPlayer;
     private ImageView achievementTomato;
     private List<GetContactsFragment> selectedContacts;
     private Button mContactButton;
     private Button mDeleteContactsButton;
     private Button mGetSingleContact;
+
+    private LinearLayout mForBulkContacts;
+    private CheckBox mCheckAll;
+    private TabWidget mTabs;
 
     private GraphView mContactGraph;
 
@@ -141,6 +148,8 @@ public class MainScreen extends AppCompatActivity {
         spec.setIndicator("Achievements");
         host.addTab(spec);
 
+        mTabs = findViewById(android.R.id.tabs);
+
         Button b = findViewById(R.id.get_contacts);
         b.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
@@ -149,13 +158,23 @@ public class MainScreen extends AppCompatActivity {
         }
         );
 
+        mForBulkContacts = findViewById(R.id.for_bulk_contacts);
         mContactButton = findViewById(R.id.get_multiple_contacts);
         mContactButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
                 getMultipleContacts();
             }}
         );
-        mContactButton.setVisibility(View.INVISIBLE);
+        mCheckAll = findViewById(R.id.check_all);
+        mCheckAll.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView,boolean isChecked) {
+                selectAllContacts();
+            }}
+        );
+        mTabs.setVisibility(View.VISIBLE);
+        mForBulkContacts.setVisibility(View.INVISIBLE);
+
         mDeleteContactsButton = findViewById(R.id.delete_contacts_button);
         mDeleteContactsButton.setVisibility(View.INVISIBLE);
 
@@ -163,7 +182,11 @@ public class MainScreen extends AppCompatActivity {
         mGetSingleContact.setVisibility(View.INVISIBLE);
 
         //getting the achievement tomato to change
-        achievementTomato = findViewById(R.id.tomato1);
+        if (achieve != null){
+            //getting the achievement tomato to change
+            achievementTomato = findViewById(R.id.message_tomato);
+            achievementTomato.setImageResource(achieve.getMessageRipeningStage());
+        }
 
         selectedContacts = new ArrayList<>();
 
@@ -207,10 +230,6 @@ public class MainScreen extends AppCompatActivity {
             }
         };
 
-        // acheive.
-        achieve = new AchievementData();
-        achieve.checkday(Calendar.getInstance().getTimeInMillis());
-
         mediaPlayer = MediaPlayer.create(getApplicationContext(), R.raw.free_music);
         mediaPlayer.start();
     }
@@ -250,6 +269,7 @@ public class MainScreen extends AppCompatActivity {
     public List<MessageData> parseCursorArray(Cursor cursor)
     {
         long now = Calendar.getInstance().getTimeInMillis();
+        achieve.checkday(now);
         Log.d("message data", "last data scrape: " + lastDataScrape + " Now: " + now);
         if(null == cursor || 0 == cursor.getCount())
         {
@@ -272,7 +292,6 @@ public class MainScreen extends AppCompatActivity {
                     singleSms.timestamp = cursor.getLong(cursor.getColumnIndexOrThrow("date"));
                     lastTimeStamp = singleSms.timestamp;
                     //only getting the new messages
-                    Log.d("times", "lastTimeStamp = " + lastTimeStamp + " lastDataScrape = " + lastDataScrape);
                     if (lastTimeStamp > lastDataScrape) {
                         messages.add(singleSms);
                         numNewMessages++;
@@ -282,7 +301,6 @@ public class MainScreen extends AppCompatActivity {
                     cursor.moveToLast();
                 }
             }
-            Log.d("newMessageScrape", "Num new messages: " + numNewMessages);
         }
         catch (Exception e)
         {
@@ -388,7 +406,6 @@ public class MainScreen extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
-        Toast.makeText(this, "main", Toast.LENGTH_SHORT).show();
         mAuth.addAuthStateListener(mAuthListener);
         // Check if user is signed in (non-null) and update UI accordingly.
         FirebaseUser currentUser = mAuth.getCurrentUser();
@@ -488,12 +505,22 @@ public class MainScreen extends AppCompatActivity {
             }
         });
         mDatabaseUserInfo.child("lastDataScrape").orderByValue();
-        //Toast.makeText(this, "got save info", Toast.LENGTH_SHORT).show();
+
+        achieve  = new AchievementData();
+        mDatabaseUserInfo.child("achievements").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                achieve = dataSnapshot.getValue(AchievementData.class);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 
     public void getNewInfo() {
-        //Toast.makeText(this, "Getting new info", Toast.LENGTH_SHORT).show();
-        //Log.d("getNewInfo", "last data scrape: " + lastDataScrape);
         //getting permission from the user to access message and contact data
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.READ_CONTACTS)
@@ -502,6 +529,7 @@ public class MainScreen extends AppCompatActivity {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.READ_CONTACTS},
                     1);
+            getNewInfo();
         }
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.READ_SMS)
@@ -510,6 +538,7 @@ public class MainScreen extends AppCompatActivity {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.READ_SMS},
                     2);
+            getNewInfo();
         }
         //read in messages if we have access to it
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS)
@@ -530,14 +559,10 @@ public class MainScreen extends AppCompatActivity {
                 {
                     if(contact.phoneNum.get(0).compareTo(formatPhoneNum(message.phoneNum)) == 0) {
                         contact.addMessage(message);
-                        achieve.incrMsg();
-                        Log.d("adding messages", "added a new message");
                     }
                 }
             }
-            if (achieve.messageAchievementProgress()){
-                achievementTomato.setImageResource(R.drawable.red_achievement_tomato);
-            }
+
             //just need this to get the set dates since that's where their
             //contact deadlines get set rn
             for (ContactData contact : mContacts){
@@ -545,7 +570,6 @@ public class MainScreen extends AppCompatActivity {
             }
             sortContacts();
         }
-        //Toast.makeText(this, "Got new info", Toast.LENGTH_SHORT).show();
         saveInfo();
     }
 
@@ -553,7 +577,8 @@ public class MainScreen extends AppCompatActivity {
         List<ContactData> c = getContacts();
         selectedContacts = new ArrayList<>();
 
-        mContactButton.setVisibility(View.VISIBLE);
+        mTabs.setVisibility(View.INVISIBLE);
+        mForBulkContacts.setVisibility(View.VISIBLE);
         mGetSingleContact.setVisibility(View.INVISIBLE);
 
         for (ContactData contact : c) {
@@ -570,6 +595,21 @@ public class MainScreen extends AppCompatActivity {
         loadingScreen.setVisibility(View.INVISIBLE);
     }
 
+    //when bulk selecting contacts, either enable all the check boxes or disable them
+    public void selectAllContacts() {
+        boolean enable = false;
+        //checking to see if we will enable or disable them
+        for (int i = 0; i < selectedContacts.size(); i++) {
+            //we will enable them all if there are any unchecked boxes
+            if (!selectedContacts.get(i).isChecked()) {
+                enable = true;
+            }
+        }
+        for (GetContactsFragment c : selectedContacts) {
+            c.check(enable);
+        }
+    }
+
     public void getMultipleContacts() {
         mContacts = new ArrayList<ContactData>();
         for (GetContactsFragment f : selectedContacts) {
@@ -577,7 +617,8 @@ public class MainScreen extends AppCompatActivity {
                 mContacts.add(f.getContact());
             }
         }
-        mContactButton.setVisibility(View.INVISIBLE);
+        mTabs.setVisibility(View.VISIBLE);
+        mForBulkContacts.setVisibility(View.INVISIBLE);
         mGetSingleContact.setVisibility(View.INVISIBLE);
         lastDataScrape = 0;
         mMessages = getSentMessages();
@@ -685,7 +726,7 @@ public class MainScreen extends AppCompatActivity {
                     }
                 });
 
-                Button directMsgButton = button.getDirectMsgButton();
+                final Button directMsgButton = button.getDirectMsgButton();
                 directMsgButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -694,7 +735,9 @@ public class MainScreen extends AppCompatActivity {
                                 != PackageManager.PERMISSION_GRANTED) {
                             if (ActivityCompat.shouldShowRequestPermissionRationale(MainScreen.this,
                                     Manifest.permission.SEND_SMS)) {
-
+                                ActivityCompat.requestPermissions(MainScreen.this,
+                                        new String[]{Manifest.permission.SEND_SMS},
+                                        3);
                             } else {
                                 ActivityCompat.requestPermissions(MainScreen.this,
                                         new String[]{Manifest.permission.SEND_SMS},
@@ -705,9 +748,10 @@ public class MainScreen extends AppCompatActivity {
                         final FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
                         Fragment m = new MessagingFragment();
                         final MessageFragment msg = (MessageFragment)m;
-                        fragmentTransaction.add(R.id.scrolllinearlayout, m, "HELLO");
+                        fragmentTransaction.add(button.getLayout(), m, "HELLO");
                         fragmentTransaction.commitNow();
                         msg.resetData(contact);
+                        directMsgButton.setEnabled(false);
                     }
                 });
                 mContactFrags.add(button);
@@ -1052,6 +1096,21 @@ public class MainScreen extends AppCompatActivity {
                             c.id = id;
                             c.name = name;
                             c.addPhoneNumber(number);
+
+                            //populating the messages from the past with this contact
+                            lastDataScrape = 0;
+                            mMessages = getSentMessages();
+                            //sorting the messages by number and showing them
+                            for (int i = mMessages.size() - 1; i >= 0; i--)
+                            {
+                                MessageData message = mMessages.get(i);
+                                if(c.phoneNum.get(0).compareTo(formatPhoneNum(message.phoneNum)) == 0) {
+                                    c.addOldMessage(message);
+                                }
+                            }
+                            saveInfo();
+                            setMainScreen();
+
                             mContacts.add(c);
                             saveInfo();
                         } else {
@@ -1108,6 +1167,7 @@ public class MainScreen extends AppCompatActivity {
     public interface GetContactsFragment{
         public abstract void resetButton(ContactData c);
         public abstract boolean isChecked();
+        public abstract void check(boolean b);
         public abstract ContactData getContact();
     }
 }
