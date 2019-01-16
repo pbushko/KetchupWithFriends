@@ -467,6 +467,7 @@ public class MainScreen extends AppCompatActivity {
             msg = "no";
         }
         Log.d("timeLeft", "" + timeLeft);
+        //trying to get analytics for sending notifications
         FirebaseAnalytics.getInstance(this)
                 .setUserProperty("timeToNextDeadline",
                         Long.toString(timeLeft));
