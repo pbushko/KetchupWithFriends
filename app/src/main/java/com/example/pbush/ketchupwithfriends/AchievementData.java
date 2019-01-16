@@ -27,7 +27,7 @@ public class AchievementData {
 
 
     public static int[] nContactBench = {10, 20, 30, 40, 50, 60};
-    public static int[] nMessageBench = {1, 5, 20, 50, 100, 1000};
+    public static int[] nMessageBench = {1, 2, 3, 4};
     public static int[] loginStreakBench = {3, 5, 10, 20, 50, 100};
     public static long loginTime = MS_PER_HOUR / 6; // in milisecond
     public static int[] deadlineBench = {5, 20, 50, 100, 150, 300};
@@ -93,28 +93,36 @@ public class AchievementData {
     }
 
     public int getMessageRipeningStage() {
-        if (nMessageAchieve > 0)
-            return R.drawable.red_achievement_tomato;
-        else
-            return R.drawable.green_achievement_tomato;
+        switch (nMessageAchieve) {
+            case(0):
+                return R.drawable.green_achievement_tomato;
+            case(1):
+                return R.drawable.yellow_achievement_tomato;
+            case(2):
+                return R.drawable.orange_achievement_tomato;
+            case(3):
+                return R.drawable.red_achievement_tomato;
+            default:
+                return R.drawable.red_achievement_tomato;
+        }
     }
-/*
-    public void update(MessageData m, List<ContactData> mContacts) {
 
+    public void update() {
+        nMessageAchieve = benchTest(nMessages, nMessageBench, nMessageAchieve);
 
     }
-    */
+
     // check if new achivement should be given, if so change it and return the next short
     // that should be assigned
     public int benchTest(int score, int[] test, int achieve) {
-        //Log.d("incr", "score, test, achieve: " + score + " " + test.length + " " + achieve + " " + test[achieve]);
         int toRet = achieve;
         if (test.length > achieve && score >= test[achieve]) {
+            Log.d("incr", "score, test, achieve: " + score + " " + test.length + " " + achieve + " " + test[achieve]);
             //calling this again so in case more than one benchmark is passed
             toRet = benchTest(score, test, toRet+1);
-            //Log.d("incr", "after recursion " + toRet);
+            Log.d("incr", "after recursion " + toRet);
         }
-        //Log.d("incr", "pls be more than 0: " + toRet);
+        Log.d("incr", "pls be more than 0: " + toRet);
         return toRet;
     }
 

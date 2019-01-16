@@ -60,9 +60,9 @@ public class MessagingFragment extends Fragment implements MainScreen.MessageFra
     //sends the message to the contact
     public void sendMessage() {
         if (contact != null) {
-            String msg = msgText.getText().toString();
+            String msg = "" + msgText.getText().toString();
 
-            if (msg != "" || msg != null) {
+            if (msg != "" && msg != null) {
                 try {
                     MainScreen.m.getNewInfo();
                     //Getting intent and PendingIntent instance
@@ -72,18 +72,19 @@ public class MessagingFragment extends Fragment implements MainScreen.MessageFra
                     SmsManager sms = SmsManager.getDefault();
                     sms.sendTextMessage(contact.phoneNum.get(0), null, msg, pi, null);
                     Log.i("Finished sending SMS...", "");
-                    MessageData m = new MessageData();
-                    m.timestamp = Calendar.getInstance().getTimeInMillis();
-                    contact.addMessage(m);
-                    MainScreen.m.lastDataScrape = m.timestamp;
+                    //we cannot wait for the message to be sent, so we can't count it, but we can at least change the time you last messaged them
+                    contact.lastMessaged = Calendar.getInstance().getTimeInMillis();
                     Toast.makeText(getActivity(),"Message sent!", Toast.LENGTH_SHORT).show();
-                    MainScreen.m.achieve.incrMsg();
                     MainScreen.m.saveInfo();
                     MainScreen.m.setMainScreen();
                 } catch (android.content.ActivityNotFoundException ex) {
                     Toast.makeText(getActivity(),
                             "SMS failed, please try again later.", Toast.LENGTH_SHORT).show();
                 }
+            }
+            else {
+                Toast.makeText(getActivity(),
+                        "Enter a message!", Toast.LENGTH_SHORT).show();
             }
         }
     }

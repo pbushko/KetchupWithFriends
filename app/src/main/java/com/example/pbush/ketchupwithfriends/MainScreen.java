@@ -11,10 +11,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Color;
-import android.media.MediaPlayer;
 import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.CountDownTimer;
 import android.os.Handler;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
@@ -49,6 +46,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -58,6 +56,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
 import com.jjoe64.graphview.DefaultLabelFormatter;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.ValueDependentColor;
@@ -99,6 +99,9 @@ public class MainScreen extends AppCompatActivity {
     private boolean mFirstLoading;
 
     private List<ContactButton> mContactFrags;
+    private long timeToNextDeadline;
+
+    private String firebaseRegistrationToken;
 
     //firebase items
     private FirebaseAuth mAuth;
@@ -109,7 +112,6 @@ public class MainScreen extends AppCompatActivity {
     private ImageView loadingScreen;
     // Add this to firebase as well
     public AchievementData achieve;
-    private MediaPlayer mediaPlayer;
     private ImageView achievementTomato;
     private List<GetContactsFragment> selectedContacts;
     private Button mContactButton;
@@ -184,6 +186,7 @@ public class MainScreen extends AppCompatActivity {
         //getting the achievement tomato to change
         if (achieve != null){
             //getting the achievement tomato to change
+            achieve.update();
             achievementTomato = findViewById(R.id.message_tomato);
             achievementTomato.setImageResource(achieve.getMessageRipeningStage());
         }
@@ -230,8 +233,6 @@ public class MainScreen extends AppCompatActivity {
             }
         };
 
-        mediaPlayer = MediaPlayer.create(getApplicationContext(), R.raw.free_music);
-        mediaPlayer.start();
     }
 
     @Override
@@ -308,7 +309,11 @@ public class MainScreen extends AppCompatActivity {
         }
 
         cursor.close();
-        lastDataScrape = now;
+        //here in case no messages were found; this is needed to be an offset for the lag
+        //between checking and sending messages
+        if (messages.size() != 0) {
+            lastDataScrape = now;
+        }
         return messages;
     }
 
@@ -399,6 +404,19 @@ public class MainScreen extends AppCompatActivity {
             //getting the saved and new info
             mContacts = new ArrayList<ContactData>();
             userId = user.getUid();
+            FirebaseInstanceId.getInstance().getInstanceId().addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
+                @Override
+                public void onComplete(@NonNull Task<InstanceIdResult> task) {
+                    if (!task.isSuccessful()) {
+                        Log.w("Firebase", "getInstanceId failed", task.getException());
+                        return;
+                    }
+
+                    // Get new Instance ID token
+                    firebaseRegistrationToken = task.getResult().getToken();
+
+                }
+            });
             getSavedInfo();
         }
     }
@@ -432,10 +450,34 @@ public class MainScreen extends AppCompatActivity {
         mDatabaseUserInfo.child("contacts").setValue(mContacts);
         mDatabaseUserInfo.child("achievements").setValue(achieve);
         mDatabaseUserInfo.child("lastDataScrape").setValue(lastDataScrape);
+        mDatabaseUserInfo.child("firebaseToken").setValue(firebaseRegistrationToken);
+        long timeToNextDeadline = Long.MAX_VALUE;
+        for (ContactData c : mContacts) {
+            if (timeToNextDeadline > c.nextMessageDeadline) {
+                timeToNextDeadline = c.nextMessageDeadline;
+                Log.d("contact", ":" + c.toString());
+            }
+        }
+        long timeLeft = timeToNextDeadline - Calendar.getInstance().getTimeInMillis();
+        String msg = "";
+        if (timeLeft < 50) {
+            msg = "yes";
+        }
+        else {
+            msg = "no";
+        }
+        Log.d("timeLeft", "" + timeLeft);
+        FirebaseAnalytics.getInstance(this)
+                .setUserProperty("timeToNextDeadline",
+                        Long.toString(timeLeft));
+        FirebaseAnalytics.getInstance(this)
+                .setUserProperty("needsToBeMessaged", msg);
     }
 
     public void getSavedInfo()
     {
+        int achievementsLoaded = LOADING;
+        loaded = LOADING;
         mDatabaseUserInfo = mDatabase.getReference(userId);
         //Toast.makeText(this, "Getting save info", Toast.LENGTH_SHORT).show();
         mDatabaseUserInfo.child("contacts").orderByValue();
@@ -506,11 +548,14 @@ public class MainScreen extends AppCompatActivity {
         });
         mDatabaseUserInfo.child("lastDataScrape").orderByValue();
 
-        achieve  = new AchievementData();
         mDatabaseUserInfo.child("achievements").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                achieve = dataSnapshot.getValue(AchievementData.class);
+                achieve = new AchievementData();
+                AchievementData achieveTemp = dataSnapshot.getValue(AchievementData.class);
+                if (achieveTemp != null) {
+                    achieve = achieveTemp;
+                }
             }
 
             @Override
@@ -518,6 +563,8 @@ public class MainScreen extends AppCompatActivity {
 
             }
         });
+        mDatabaseUserInfo.child("achievements").orderByValue();
+
     }
 
     public void getNewInfo() {
@@ -549,6 +596,8 @@ public class MainScreen extends AppCompatActivity {
 
             mMessages = getSentMessages();
 
+            Log.d("msg", "mMessages" + mMessages.size());
+
             //sorting the messages by number and showing them
             for (int i = mMessages.size() - 1; i >= 0; i--)
             {
@@ -558,6 +607,7 @@ public class MainScreen extends AppCompatActivity {
                 for (ContactData contact : mContacts)
                 {
                     if(contact.phoneNum.get(0).compareTo(formatPhoneNum(message.phoneNum)) == 0) {
+                        Log.d("msg", "added!");
                         contact.addMessage(message);
                     }
                 }
@@ -726,6 +776,7 @@ public class MainScreen extends AppCompatActivity {
                     }
                 });
 
+                //this enables the in-app messaging feature
                 final Button directMsgButton = button.getDirectMsgButton();
                 directMsgButton.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -749,8 +800,8 @@ public class MainScreen extends AppCompatActivity {
                         Fragment m = new MessagingFragment();
                         final MessageFragment msg = (MessageFragment)m;
                         fragmentTransaction.add(button.getLayout(), m, "HELLO");
-                        fragmentTransaction.commitNow();
                         msg.resetData(contact);
+                        fragmentTransaction.commitNow();
                         directMsgButton.setEnabled(false);
                     }
                 });
@@ -766,7 +817,6 @@ public class MainScreen extends AppCompatActivity {
             Log.d("saving","saved!");
             saveInfo();
         }
-        Log.d("write data to screen", "done writing data");
     }
 
     @Override
