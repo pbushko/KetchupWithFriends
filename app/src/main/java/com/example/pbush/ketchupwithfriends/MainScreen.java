@@ -842,7 +842,6 @@ public class MainScreen extends AppCompatActivity {
         final Spinner graphSpinner = (Spinner) findViewById(R.id.graph_sorting);
         mContactGraph = findViewById(R.id.graph);
         ArrayList<DataPoint> dps = c.getGraphPoints();
-        BarGraphSeries<DataPoint> s = c.getBarGraphPoints();
         graphSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 //this gets called on initialization as well
@@ -870,16 +869,17 @@ public class MainScreen extends AppCompatActivity {
             case ("Week") :
                 graphSpinner.setSelection(0);
                 mContactGraph.getGridLabelRenderer().setLabelFormatter(new DateAsXAxisLabelFormatter(this));
-                mContactGraph.getGridLabelRenderer().setNumHorizontalLabels(7);
+                mContactGraph.getGridLabelRenderer().setNumHorizontalLabels(9);
                 try {
                     String now = fmt.format(new Date(cal.getTimeInMillis()));
                     today = fmt.parse(now);
                     //formatting for week
-                    cal.add(Calendar.DAY_OF_YEAR, -6);
+                    cal.add(Calendar.DAY_OF_YEAR, -7);
                     last = fmt.parse(fmt.format(new Date(cal.getTimeInMillis())));
                 } catch (ParseException e) {
 
                 }
+                BarGraphSeries<DataPoint> s = c.getWeekBarGraphPoints(last);
                 s.setSpacing(30);
                 // styling
                 s.setValueDependentColor(new ValueDependentColor<DataPoint>() {
@@ -891,9 +891,10 @@ public class MainScreen extends AppCompatActivity {
                 s.setDrawValuesOnTop(true);
                 s.setValuesOnTopColor(Color.RED);
                 mContactGraph.addSeries(s);
-                mContactGraph.getGridLabelRenderer().setHumanRounding(false);
+                mContactGraph.getGridLabelRenderer().setHumanRounding(false, true);
                 mContactGraph.getViewport().setMinX(last.getTime());
-                mContactGraph.getViewport().setMaxX(today.getTime());
+                mContactGraph.getViewport().setMinY(0);
+                mContactGraph.getViewport().setMaxX(today.getTime() + 86400000);
                 mContactGraph.getViewport().setXAxisBoundsManual(true);
                 mContactGraph.getGridLabelRenderer().setLabelFormatter(new DefaultLabelFormatter() {
                     @Override
@@ -901,8 +902,22 @@ public class MainScreen extends AppCompatActivity {
                         if (isValueX) {
                             // show new x depending on the day
                             Calendar calendar = Calendar.getInstance();
+                            Calendar cal = Calendar.getInstance();
+                            Date last = cal.getTime();
+                            SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
+                            try {
+                                //formatting for week
+                                cal.add(Calendar.DAY_OF_YEAR, -6);
+                                last = fmt.parse(fmt.format(new Date(cal.getTimeInMillis())));
+                            } catch (ParseException e) {
+
+                            }
                             calendar.setTime(new Date((long) value));
                             String dow = "";
+                            if (calendar.getTimeInMillis() < last.getTime())
+                            {
+                                return "";
+                            }
                             switch (calendar.get(Calendar.DAY_OF_WEEK)) {
                                 case (Calendar.SUNDAY):
                                     dow = "Su";
@@ -922,8 +937,11 @@ public class MainScreen extends AppCompatActivity {
                                 case (Calendar.FRIDAY):
                                     dow = "F";
                                     break;
-                                default:
+                                case (Calendar.SATURDAY):
                                     dow = "Sa";
+                                    break;
+                                default:
+                                    dow = "";
                                     break;
                             }
                             return dow;
@@ -938,7 +956,7 @@ public class MainScreen extends AppCompatActivity {
             case("Month"):
                 graphSpinner.setSelection(1);
                 mContactGraph.getGridLabelRenderer().setHorizontalAxisTitle("Week");
-                mContactGraph.getGridLabelRenderer().setNumHorizontalLabels(Calendar.WEEK_OF_MONTH + 2);
+                mContactGraph.getGridLabelRenderer().setNumHorizontalLabels(7);
                 try {
                     String now = fmt.format(new Date(cal.getTimeInMillis()));
                     //getting the beginning of the month
@@ -961,10 +979,36 @@ public class MainScreen extends AppCompatActivity {
                 s.setValuesOnTopColor(Color.RED);
 
                 mContactGraph.addSeries(s);
-                mContactGraph.getGridLabelRenderer().setHumanRounding(false);
+                mContactGraph.getGridLabelRenderer().setHumanRounding(false, true);
                 mContactGraph.getViewport().setMinX(0);
-                mContactGraph.getViewport().setMaxX(5);
+                mContactGraph.getViewport().setMinY(0);
+                mContactGraph.getViewport().setMaxX(6);
                 mContactGraph.getViewport().setXAxisBoundsManual(true);
+                mContactGraph.getGridLabelRenderer().setLabelFormatter(new DefaultLabelFormatter() {
+                    @Override
+                    public String formatLabel(double value, boolean isValueX) {
+                        if (isValueX) {
+                            // show new x depending on the month
+                            switch ((int)Math.round(value)) {
+                                case (1):
+                                    return "1";
+                                case (2):
+                                    return "2";
+                                case (3):
+                                    return "3";
+                                case (4):
+                                    return "4";
+                                case (5):
+                                    return "5";
+                                default:
+                                    return "";
+                            }
+                        } else {
+                            // show currency for y values
+                            return super.formatLabel(value, isValueX);
+                        }
+                    }
+                });
                 break;
             //default is the year
             default:
@@ -993,8 +1037,9 @@ public class MainScreen extends AppCompatActivity {
                 s.setValuesOnTopColor(Color.RED);
 
                 mContactGraph.addSeries(s);
-                mContactGraph.getGridLabelRenderer().setHumanRounding(false);
+                mContactGraph.getGridLabelRenderer().setHumanRounding(false, true);
                 mContactGraph.getViewport().setMinX(0);
+                mContactGraph.getViewport().setMinY(0);
                 mContactGraph.getViewport().setMaxX(13);
                 mContactGraph.getViewport().setXAxisBoundsManual(true);
                 mContactGraph.getGridLabelRenderer().setLabelFormatter(new DefaultLabelFormatter() {

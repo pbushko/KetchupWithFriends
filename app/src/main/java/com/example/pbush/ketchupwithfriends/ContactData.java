@@ -29,6 +29,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.io.ByteArrayInputStream;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -126,7 +127,7 @@ public class ContactData implements Comparable<ContactData> {
     public BarGraphSeries<DataPoint> getMonthBarGraphPoints(Date firstDay) {
         int sz = messageDates.size();
         Calendar cal = Calendar.getInstance();
-        int[] counts = new int[6];
+        int[] counts = new int[7];
         if (sz != 0) {
             SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
             try {
@@ -134,15 +135,16 @@ public class ContactData implements Comparable<ContactData> {
                 Date d = fmt.parse(messageDates.get(dateIndex));
                 while (dateIndex > 0 && d.before(new Date(Calendar.getInstance().getTimeInMillis())) && d.after(firstDay)) {
                     cal.setTime(d);
-                    int idx = cal.get(Calendar.WEEK_OF_MONTH) - 1;
+                    int idx = cal.get(Calendar.WEEK_OF_MONTH);
                     Log.d("monthpts", "" + idx);
                     counts[idx] += messageNums.get(dateIndex);
                     dateIndex--;
                     d = fmt.parse(messageDates.get(dateIndex));
                 }
-                DataPoint[] dps = new DataPoint[6];
-                for (int i = 0; i < 6; i++) {
-                    dps[i] = new DataPoint(i+1, counts[i]);
+                DataPoint[] dps = new DataPoint[5];
+                for (int i = 1; i < 6; i++) {
+                    dps[i-1] = new DataPoint(i, counts[i]);
+                    Log.d("month", "" + dps[i-1]);
                 }
                 //after accumulating all the indicies
                 return new BarGraphSeries<>(dps);
@@ -161,12 +163,15 @@ public class ContactData implements Comparable<ContactData> {
     public BarGraphSeries<DataPoint> getYearBarGraphPoints(Date firstDay) {
         int sz = messageDates.size();
         int[] counts = new int[13];
+        //making sure there is at least one message
         if (sz != 0) {
             SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
             try {
                 int dateIndex = sz - 1;
+                //getting the date of the last message
                 Date d = fmt.parse(messageDates.get(dateIndex));
                 Log.d("year", "" + d.before(new Date(Calendar.getInstance().getTimeInMillis())));
+                //while there are still messages, d is before now, and d is after the date 1 year ago
                 while (dateIndex > 0 && d.before(new Date(Calendar.getInstance().getTimeInMillis())) && d.after(firstDay)) {
                     int idx = Integer.parseInt(messageDates.get(dateIndex).substring(4, 6));
                     Log.d("month of year", "total:" + messageDates.get(dateIndex) + " idx:" + idx);
@@ -177,6 +182,7 @@ public class ContactData implements Comparable<ContactData> {
                 DataPoint[] dps = new DataPoint[12];
                 for (int i = 1; i < 13; i++) {
                     dps[i-1] = new DataPoint(i, counts[i]);
+                    Log.d("year", "" + dps[i-1]);
                 }
                 //after accumulating all the indicies
                 return new BarGraphSeries<>(dps);
@@ -205,6 +211,52 @@ public class ContactData implements Comparable<ContactData> {
             }
         }
         return new BarGraphSeries<>(d);
+    }
+
+    public BarGraphSeries<DataPoint> getWeekBarGraphPoints(Date firstDay) {
+        int sz = messageDates.size();
+        //making sure there is at least one message
+        if (sz != 0) {
+            SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
+            try {
+                int dateIndex = sz - 1;
+                //getting the date of the last message
+                Date d = fmt.parse(messageDates.get(dateIndex));
+                List<DataPoint> dps = new ArrayList<DataPoint>();
+                //while there are still messages, d is before now, and d is after the date 1 year ago
+                int idx = 0;
+                while (dateIndex > sz - 8 && d.before(new Date(Calendar.getInstance().getTimeInMillis())) && d.after(firstDay)) {
+                    //int idx = (int) getDifferenceDays(fmt.parse(messageDates.get(dateIndex)), d);
+                    //Log.d("month of year", "total:" + messageDates.get(dateIndex) + " idx:" + idx);
+                    Log.d("getGraphPoints", "" + messageDates.get(dateIndex)+ " : " + messageNums.get(dateIndex));
+                    dps.add(new DataPoint(fmt.parse(messageDates.get(dateIndex)), messageNums.get(dateIndex)));
+                    dateIndex--;
+                    idx++;
+                    d = fmt.parse(messageDates.get(dateIndex));
+                }
+
+                DataPoint[] toRet = new DataPoint[dps.size()];
+                for (int i = 0; i < dps.size(); i++) {
+                    Log.d("day", "" + dps.get(i));
+                    toRet[i] = dps.get(dps.size() - i - 1);
+                }
+                //after accumulating all the indicies
+                return new BarGraphSeries<>(toRet);
+            }
+            catch (ParseException e) {
+                //return an empty graph otherwise
+                return new BarGraphSeries<>(new DataPoint[]{});
+            }
+        }
+        else {
+            //return an empty graph otherwise
+            return new BarGraphSeries<>(new DataPoint[]{});
+        }
+    }
+
+    private static long getDifferenceDays(Date d1, Date d2) {
+        long diff = d2.getTime() - d1.getTime();
+        return TimeUnit.DAYS.convert(diff, TimeUnit.MILLISECONDS);
     }
 
     public void addMessage(MessageData m)
