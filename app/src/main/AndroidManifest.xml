@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.pbush.ketchupwithfriends">
+    package="com.catgames.pbush.ketchupwithfriends">
     <uses-permission android:name="android.permission.READ_CONTACTS"/>
     <uses-permission android:name="android.permission.READ_SMS"/>
     <uses-permission android:name="android.permission.SEND_SMS" />
@@ -11,7 +11,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainScreen">
+        <activity android:name="com.catgames.pbush.ketchupwithfriends.MainScreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -19,11 +19,11 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".Settings"
+            android:name="com.catgames.pbush.ketchupwithfriends.Settings"
             android:id="@id/action_settings"
-            android:parentActivityName=".MainScreen" >
+            android:parentActivityName="com.catgames.pbush.ketchupwithfriends.MainScreen" >
         </activity>
-        <activity android:name=".FirebaseUIActivity"></activity>
+        <activity android:name="com.catgames.pbush.ketchupwithfriends.FirebaseUIActivity"></activity>
     </application>
 
 </manifest>

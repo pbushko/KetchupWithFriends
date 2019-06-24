@@ -8,12 +8,20 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:212568678247:android:12b75ad5f62dfa4e",
+        "mobilesdk_app_id": "1:212568678247:android:d18324c5584f6ae9",
         "android_client_info": {
-          "package_name": "com.example.pbush.ketchupwithfriends"
+          "package_name": "com.catgames.pbush.ketchupwithfriends"
         }
       },
       "oauth_client": [
+        {
+          "client_id": "212568678247-ji0svdbmkf3lsq1ng9k94g0ts7k3p8mo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.catgames.pbush.ketchupwithfriends",
+            "certificate_hash": "d2fdad1cca9d8555bab6fa06226356196fc8ed4f"
+          }
+        },
         {
           "client_id": "212568678247-brd0erbr6nits43q9v907f65pslm3lgj.apps.googleusercontent.com",
           "client_type": 3
@@ -25,15 +33,13 @@
         }
       ],
       "services": {
-        "analytics_service": {
-          "status": 1
-        },
         "appinvite_service": {
-          "status": 1,
-          "other_platform_oauth_client": []
-        },
-        "ads_service": {
-          "status": 2
+          "other_platform_oauth_client": [
+            {
+              "client_id": "212568678247-brd0erbr6nits43q9v907f65pslm3lgj.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
